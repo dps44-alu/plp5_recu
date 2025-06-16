@@ -21,6 +21,12 @@ unsigned tamTipo(unsigned t);
 unsigned numDim(unsigned t);
 unsigned baseTipo(unsigned t);
 
+/* auxiliary state to manage index checking order */
+unsigned expectedDim=0;      // number of indices expected for current array ref
+unsigned currIndex=0;        // index currently being parsed (1-based)
+bool ignoreNodecl=false;     // true when indices beyond expectedDim are parsed
+Simbolo* refSimb=nullptr;    // temporal storage for ref symbol in mid rules
+
 %}
 
 %union {
@@ -43,11 +49,11 @@ unsigned baseTipo(unsigned t);
 
 %start Programa
 
-%type <tipo> Expr Term Factor TipoOpt Tipo SType Ref
+%type <tipo> Expr Term Factor TipoOpt Tipo SType Ref Index
 %type <list> LExpr Dim
 
 %%
-Programa : TK_FN TK_ID TK_PARI TK_PARD { tsActual = new TablaSimbolos(NULL); dirActual=0; } Cod TK_ENDFN { printf("stop\n"); }
+Programa : TK_FN TK_ID TK_PARI TK_PARD { tsActual = new TablaSimbolos(NULL); dirActual=0; } Cod TK_ENDFN { printf("halt\n"); }
          ;
 
 Cod : /* empty */
@@ -70,18 +76,14 @@ Instruccion : TK_BLQ { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(d
             }
             | TK_PRINT Expr
             | TK_READ Ref
-            | TK_WHILE Expr Instruccion {
-                if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while");
-            }
+            | TK_WHILE Expr { if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while"); } Instruccion
             | TK_LOOP TK_ID TK_RANGE Rango Instruccion TK_ENDLOOP {
                 Simbolo* s=tsActual->searchSymb($2.nombre);
                 if(!s) errorSemantico(ERR_NODECL,$2.fil,$2.col,$2.nombre);
                 if(!(tTipos.tipos[s->tipo].clase==TIPOBASICO && s->tipo==ENTERO))
                     errorSemantico(ERR_LOOP,$1.fil,$1.col,"loop");
             }
-            | TK_IF Expr Instruccion Ip {
-                if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"if");
-            }
+            | TK_IF Expr { if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"if"); } Instruccion Ip
             ;
 
 Rango : TK_NUMINT TK_DOSP TK_NUMINT
@@ -94,37 +96,52 @@ Ip : TK_ELSE Instruccion TK_FI
    ;
 
 Ref : TK_ID {
-            Simbolo* s=tsActual->searchSymb($1.nombre);
-            if(!s) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre);
-            if(tTipos.tipos[s->tipo].clase==ARRAY) errorSemantico(ERR_FALTAN,$1.fil,$1.col,$1.nombre);
+        Simbolo* s=tsActual->searchSymb($1.nombre);
+        if(!s){
+            if(!ignoreNodecl) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre);
+            $$ = ENTERO;
+        }else{
+            if(!ignoreNodecl && tTipos.tipos[s->tipo].clase==ARRAY)
+                errorSemantico(ERR_FALTAN,$1.fil,$1.col,$1.nombre);
             $$ = baseTipo(s->tipo);
         }
-    | TK_ID TK_CORI LExpr TK_CORD {
-            Simbolo* s=tsActual->searchSymb($1.nombre);
-            if(!s) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre);
-            if(tTipos.tipos[s->tipo].clase!=ARRAY) errorSemantico(ERR_SOBRAN,$2.fil,$2.col,"");
-            unsigned nd=numDim(s->tipo);
-            if($3->tipos.size()<nd) errorSemantico(ERR_FALTAN,$4.fil,$4.col,"");
-            if($3->tipos.size()>nd) errorSemantico(ERR_SOBRAN,$3->seps[nd-1].fil,$3->seps[nd-1].col,"");
-            if($3->tipos.size()>0){
-                if($3->tipos[0]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$2.fil,$2.col,"");
-                for(unsigned i=1;i<$3->tipos.size();i++) if($3->tipos[i]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$3->seps[i-1].fil,$3->seps[i-1].col,"");
+        }
+    | TK_ID {
+            refSimb=tsActual->searchSymb($1.nombre);
+            if(!refSimb){ if(!ignoreNodecl) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre); expectedDim=0; }
+            else expectedDim=numDim(refSimb->tipo);
+        } TK_CORI {
+            currIndex=1;
+        } LExpr TK_CORD {
+            Simbolo* s=refSimb;
+            if(!s){ $$ = ENTERO; delete $5; }
+            else {
+                if(tTipos.tipos[s->tipo].clase!=ARRAY) errorSemantico(ERR_SOBRAN,$3.fil,$3.col,"");
+                unsigned nd=numDim(s->tipo);
+                if($5->tipos.size()<nd) errorSemantico(ERR_FALTAN,$6.fil,$6.col,"");
+                if($5->tipos.size()>nd) errorSemantico(ERR_SOBRAN,$5->seps[nd-1].fil,$5->seps[nd-1].col,"");
+                if($5->tipos.size()>0){
+                    if($5->tipos[0]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$3.fil,$3.col,"");
+                    for(unsigned i=1;i<$5->tipos.size();i++) if($5->tipos[i]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$5->seps[i-1].fil,$5->seps[i-1].col,"");
+                }
+                $$ = baseTipo(s->tipo);
+                delete $5;
             }
-            $$ = baseTipo(s->tipo);
-            delete $3;
         }
     ;
 
-LExpr : Expr {
+LExpr : Index {
             $$ = new ListIndices();
             $$->tipos.push_back($1);
         }
-      | LExpr TK_COMA Expr {
+      | LExpr TK_COMA Index {
             $1->tipos.push_back($3);
             $1->seps.push_back($2);
             $$ = $1;
         }
       ;
+
+Index : { ignoreNodecl = (currIndex>expectedDim); } Expr { $$=$2; ignoreNodecl=false; currIndex++; };
 
 Expr : Expr TK_OPAS Term { $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; }
      | Term { $$ = $1; }
