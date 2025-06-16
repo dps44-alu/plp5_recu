@@ -1,0 +1,249 @@
+%{
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include "TablaSimbolos.h"
+#include "TablaTipos.h"
+#include "comun.h"
+
+extern int numlin, numcol;
+int yylex();
+extern FILE *yyin;
+void yyerror(const char *s);
+
+TablaTipos tTipos;
+TablaSimbolos *tsActual;
+int dirActual=0;
+std::vector<int> pilaDir;
+int ctemp=16000;
+int nuevaTemp(){ if(ctemp>16383) errorSemantico(ERR_MAXTEMP,numlin,numcol,""); return ctemp++; }
+unsigned tamTipo(unsigned t);
+unsigned numDim(unsigned t);
+unsigned baseTipo(unsigned t);
+
+%}
+
+%union {
+   IdInfo id;
+   NumIntInfo numi;
+   NumRealInfo numr;
+   OpInfo opi;
+   Pos pos;
+   unsigned tipo;
+   ListIndices* list;
+}
+%destructor { delete $$; } <list>
+
+%token <pos> TK_FN TK_ENDFN TK_INT TK_REAL TK_ARRAY TK_BLQ TK_FBLQ TK_LET TK_VAR TK_PRINT TK_READ TK_IF TK_ELSE TK_ELIF TK_FI TK_WHILE TK_LOOP TK_RANGE TK_ENDLOOP
+%token <pos> TK_COMA TK_PYC TK_DOSP TK_PARI TK_PARD TK_ASIG TK_CORI TK_CORD
+%token <opi> TK_OPAS TK_OPMD
+%token <id> TK_ID
+%token <numi> TK_NUMINT
+%token <numr> TK_NUMREAL
+
+%start Programa
+
+%type <tipo> Expr Term Factor TipoOpt Tipo SType Ref
+%type <list> LExpr Dim
+
+%%
+Programa : TK_FN TK_ID TK_PARI TK_PARD { tsActual = new TablaSimbolos(NULL); dirActual=0; } Cod TK_ENDFN { printf("stop\n"); }
+         ;
+
+Cod : /* empty */
+    | Instruccion
+    | Cod TK_PYC Instruccion
+    ;
+
+Instruccion : TK_BLQ { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(dirActual); } Cod TK_FBLQ { dirActual=pilaDir.back(); pilaDir.pop_back(); tsActual=tsActual->getPadre(); }
+            | TK_LET Ref TK_ASIG Expr {
+                if(!($2==$4 || ($2==REAL && $4==ENTERO)))
+                    errorSemantico(ERR_ASIG,$3.fil,$3.col,"=");
+            }
+            | TK_VAR TK_ID TipoOpt {
+                Simbolo s; s.nombre=$2.nombre; s.tipo=$3; s.dir=dirActual; s.tam=tamTipo($3);
+                if(!tsActual->newSymb(s))
+                    errorSemantico(ERR_YADECL,$2.fil,$2.col,$2.nombre);
+                if(dirActual + s.tam > 16000)
+                    errorSemantico(ERR_NOCABE,$2.fil,$2.col,$2.nombre);
+                dirActual += s.tam;
+            }
+            | TK_PRINT Expr
+            | TK_READ Ref
+            | TK_WHILE Expr Instruccion {
+                if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while");
+            }
+            | TK_LOOP TK_ID TK_RANGE Rango Instruccion TK_ENDLOOP {
+                Simbolo* s=tsActual->searchSymb($2.nombre);
+                if(!s) errorSemantico(ERR_NODECL,$2.fil,$2.col,$2.nombre);
+                if(!(tTipos.tipos[s->tipo].clase==TIPOBASICO && s->tipo==ENTERO))
+                    errorSemantico(ERR_LOOP,$1.fil,$1.col,"loop");
+            }
+            | TK_IF Expr Instruccion Ip {
+                if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"if");
+            }
+            ;
+
+Rango : TK_NUMINT TK_DOSP TK_NUMINT
+      | TK_NUMINT
+      ;
+
+Ip : TK_ELSE Instruccion TK_FI
+   | TK_ELIF Expr Instruccion Ip
+   | TK_FI
+   ;
+
+Ref : TK_ID {
+            Simbolo* s=tsActual->searchSymb($1.nombre);
+            if(!s) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre);
+            if(tTipos.tipos[s->tipo].clase==ARRAY) errorSemantico(ERR_FALTAN,$1.fil,$1.col,$1.nombre);
+            $$ = baseTipo(s->tipo);
+        }
+    | TK_ID TK_CORI LExpr TK_CORD {
+            Simbolo* s=tsActual->searchSymb($1.nombre);
+            if(!s) errorSemantico(ERR_NODECL,$1.fil,$1.col,$1.nombre);
+            if(tTipos.tipos[s->tipo].clase!=ARRAY) errorSemantico(ERR_SOBRAN,$2.fil,$2.col,"");
+            unsigned nd=numDim(s->tipo);
+            if($3->tipos.size()<nd) errorSemantico(ERR_FALTAN,$4.fil,$4.col,"");
+            if($3->tipos.size()>nd) errorSemantico(ERR_SOBRAN,$3->seps[nd-1].fil,$3->seps[nd-1].col,"");
+            if($3->tipos.size()>0){
+                if($3->tipos[0]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$2.fil,$2.col,"");
+                for(unsigned i=1;i<$3->tipos.size();i++) if($3->tipos[i]!=ENTERO) errorSemantico(ERR_INDICE_ENTERO,$3->seps[i-1].fil,$3->seps[i-1].col,"");
+            }
+            $$ = baseTipo(s->tipo);
+            delete $3;
+        }
+    ;
+
+LExpr : Expr {
+            $$ = new ListIndices();
+            $$->tipos.push_back($1);
+        }
+      | LExpr TK_COMA Expr {
+            $1->tipos.push_back($3);
+            $1->seps.push_back($2);
+            $$ = $1;
+        }
+      ;
+
+Expr : Expr TK_OPAS Term { $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; }
+     | Term { $$ = $1; }
+     ;
+
+Term : Term TK_OPMD Factor { $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; }
+     | Factor { $$ = $1; }
+     ;
+
+Factor : TK_NUMINT { $$ = ENTERO; }
+       | TK_NUMREAL { $$ = REAL; }
+       | TK_PARI Expr TK_PARD { $$ = $2; }
+       | Ref { $$ = $1; }
+       ;
+
+TipoOpt : TK_DOSP Tipo { $$ = $2; }
+        | /* empty */ { $$ = ENTERO; }
+        ;
+
+Tipo : SType
+     ;
+
+SType : TK_INT
+      { $$ = ENTERO; }
+      | TK_REAL { $$ = REAL; }
+      | TK_ARRAY SType Dim {
+            ListIndices* l=$3;
+            unsigned b=$2;
+            for(int i=l->tipos.size()-1;i>=0;i--){
+                b = tTipos.nuevoTipoArray(l->tipos[i], b);
+            }
+            $$ = b;
+            delete l;
+        }
+      ;
+
+Dim : TK_NUMINT {
+            $$ = new ListIndices();
+            if($1.val<=0) errorSemantico(ERR_DIM,$1.fil,$1.col,"");
+            $$->tipos.push_back($1.val);
+            Pos p; p.fil=$1.fil; p.col=$1.col; $$->seps.push_back(p);
+        }
+    | TK_NUMINT TK_COMA Dim {
+            if($1.val<=0) errorSemantico(ERR_DIM,$1.fil,$1.col,"");
+            $3->tipos.insert($3->tipos.begin(), $1.val);
+            $3->seps.insert($3->seps.begin(), $2);
+            $$ = $3;
+        }
+    ;
+
+%%
+unsigned tamTipo(unsigned t){
+    unTipo tt = tTipos.tipos[t];
+    if(tt.clase==TIPOBASICO) return 1;
+    return tt.tamano * tamTipo(tt.tipoBase);
+}
+
+unsigned numDim(unsigned t){
+    unsigned n=0; while(tTipos.tipos[t].clase==ARRAY){ n++; t=tTipos.tipos[t].tipoBase; } return n;
+}
+
+unsigned baseTipo(unsigned t){
+    while(tTipos.tipos[t].clase==ARRAY) t=tTipos.tipos[t].tipoBase; return t;
+}
+
+void yyerror(const char *s)
+{
+    msgError(ERRSINT,numlin,numcol-1,"");
+}
+
+// Error handling and semantic error messages
+
+void errorSemantico(int nerror,int fila,int columna,const char *s)
+{
+    fprintf(stderr,"Error semantico (%d,%d): ",fila,columna);
+    switch (nerror) {
+        case ERR_YADECL: fprintf(stderr,"variable '%s' ya declarada\n",s);
+               break;
+        case ERR_NODECL: fprintf(stderr,"variable '%s' no declarada\n",s);
+               break;
+        case ERR_NOCABE:fprintf(stderr,"la variable '%s' ya no cabe en memoria\n",s);
+               break;
+        case ERR_IFWHILE:fprintf(stderr,"la expresion del '%s' debe ser de tipo entero",s);
+               break;
+        case ERR_LOOP:fprintf(stderr,"la variable del '%s' debe ser de tipo entero",s);
+               break;
+        case ERR_DIM: fprintf(stderr,"la dimension debe ser mayor que 0\n");
+               break;
+        case ERR_FALTAN: fprintf(stderr,"faltan indices\n");
+               break;
+        case ERR_SOBRAN: fprintf(stderr,"sobran indices\n");
+               break;
+        case ERR_INDICE_ENTERO: fprintf(stderr,"el indice de un array debe ser de tipo entero\n");
+               break;
+        case ERR_ASIG: fprintf(stderr,"tipos incompatibles en la asignacion\n");
+               break;
+        case ERR_MAXTEMP:fprintf(stderr,"no hay espacio para variables temporales\n");
+               break;
+    }
+    exit(-1);
+}
+
+void msgError(int nerror,int nlin,int ncol,const char *s)
+{
+     switch (nerror) {
+         case ERRLEXICO: fprintf(stderr,"Error lexico (%d,%d): caracter '%s' incorrecto\n",nlin,ncol,s);
+            break;
+         case ERRSINT: fprintf(stderr,"Error sintactico (%d,%d): en '%s'\n",nlin,ncol,s);
+            break;
+         case ERREOF: fprintf(stderr,"Error sintactico: fin de fichero inesperado\n");
+            break;
+         case ERRLEXEOF: fprintf(stderr,"Error lexico: fin de fichero inesperado\n");
+            break;
+     }
+
+     exit(1);
+}
+
+int main(int argc,char *argv[])
+{
+    if(argc>1){yyin=fopen(argv[1],"r"); if(!yyin){perror(argv[1]); return -1;}} int r=yyparse(); if(argc>1) fclose(yyin); return r;
+}
