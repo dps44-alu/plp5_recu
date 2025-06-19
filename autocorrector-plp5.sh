@@ -7,6 +7,8 @@ ENT=datos-entrada   # Directorio con los datos de entrada a las pruebas
 SAL=salida-esperada # Directorio con los ficheros de salida correctos
 OBT=salida-obtenida # Directorio con los ficheros obtenidos tras la ejecución de la práctica
 
+mkdir -p "$OBT"
+
 mata=/tmp/mata
 comparefiles=/tmp/comparefiles
 
