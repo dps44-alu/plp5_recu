@@ -1,0 +1,53 @@
+wrr $7
+wrl
+wri #7
+wrl
+wri #0
+wrl
+wri #1
+wrl
+wri #2
+wrl
+wri #3
+wrl
+wri #4
+wrl
+wri #5
+wrl
+wri #6
+wrl
+wri #7
+wrl
+wri #8
+wrl
+wri #9
+wrl
+wrr $77.77
+wrl
+wri #0
+wrl
+wri #1
+wrl
+wri #2
+wrl
+wri #3
+wrl
+wri #4
+wrl
+wri #5
+wrl
+wri #6
+wrl
+wri #7
+wrl
+wri #8
+wrl
+wri #9
+wrl
+wri #11
+wrl
+wrr $55000
+wrl
+wri #787
+wrl
+halt
