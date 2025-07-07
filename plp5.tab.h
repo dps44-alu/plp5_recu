@@ -94,7 +94,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 36 "plp5.y"
+#line 42 "plp5.y"
 
    IdInfo id;
    NumIntInfo numi;

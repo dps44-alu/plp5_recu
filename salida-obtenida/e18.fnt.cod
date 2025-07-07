@@ -1,0 +1,6 @@
+mov #2 A
+mov #7 A
+mov A 16000
+muli 16000 A
+mov #3 A
+mov #1 A

@@ -1,0 +1,5 @@
+mov 0 A
+mov $1 A
+mov A 0
+L1:
+mov 0 A

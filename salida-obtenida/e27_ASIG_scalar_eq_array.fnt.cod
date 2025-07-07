@@ -1,0 +1,3 @@
+mov #0 A
+mov #1 A
+mov 5 A

@@ -1,0 +1,11 @@
+mov 0 A
+mov #10 A
+mov A 0
+mov 0 A
+mov A 16000
+wri 16000
+wrl
+mov #20 A
+mov A 16001
+wri 16001
+wrl

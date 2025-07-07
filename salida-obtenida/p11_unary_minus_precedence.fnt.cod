@@ -1,0 +1,84 @@
+mov 1 A
+mov #4 A
+mov A 1
+mov 2 A
+mov #2 A
+mov A 2
+mov 0 A
+mov 1 A
+mov #0 B
+subi A B
+mov 2 A
+mov A 16000
+muli 16000 A
+mov A 2
+mov 0 A
+mov A 16001
+wri 16001
+wrl
+mov 0 A
+mov 1 A
+mov 2 A
+mov A 16002
+muli 16002 A
+mov #0 B
+subi A B
+mov A 2
+mov 0 A
+mov A 16003
+wri 16003
+wrl
+mov 0 A
+mov 1 A
+mov #0 B
+subi A B
+mov 2 A
+mov A 16004
+addi 16004 A
+mov A 2
+mov 0 A
+mov A 16005
+wri 16005
+wrl
+mov 0 A
+mov 1 A
+mov 2 A
+mov A 16006
+addi 16006 A
+mov #0 B
+subi A B
+mov A 2
+mov 0 A
+mov A 16007
+wri 16007
+wrl
+mov 4 A
+mov $4 A
+mov A 4
+mov 5 A
+mov $2 A
+mov A 5
+mov 3 A
+mov 4 A
+mov $0.0 B
+subr A B
+mov 5 A
+mov A 16008
+mulr 16008 A
+mov A 5
+mov 3 A
+mov A 16009
+wrr 16009
+wrl
+mov 3 A
+mov 4 A
+mov 5 A
+mov A 16010
+divr 16010 A
+mov $0.0 B
+subr A B
+mov A 5
+mov 3 A
+mov A 16011
+wrr 16011
+wrl

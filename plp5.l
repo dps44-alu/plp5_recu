@@ -66,7 +66,7 @@ int tokcol = 1;
                         numcol+=yyleng;
                         return TK_NUMREAL;
                      }
-[A-Za-z][0-9A-Za-z]* {
+[A-Za-z][0-9A-Za-z_]* {
                         tokline=numlin; tokcol=numcol;
                         yylval.id.nombre = strdup(yytext);
                         yylval.id.fil=numlin; yylval.id.col=numcol;
