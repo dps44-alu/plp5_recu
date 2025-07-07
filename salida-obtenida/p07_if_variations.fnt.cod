@@ -9,6 +9,7 @@ mov A 16000
 wri 16000
 wrl
 mov 0 A
+jz L1
 mov #1 A
 mov A 16001
 wri 16001
@@ -18,6 +19,7 @@ mov A 16002
 wri 16002
 wrl
 mov 1 A
+jz L2
 mov #0 A
 mov A 16003
 wri 16003
@@ -32,6 +34,7 @@ mov A 16005
 wri 16005
 wrl
 mov 1 A
+jz L3
 mov #0 A
 mov A 16006
 wri 16006

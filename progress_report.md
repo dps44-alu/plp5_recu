@@ -38,6 +38,7 @@ El proyecto solo pasaba las pruebas básicas (15/15) pero fallaba en las pruebas
 - Menos unario → `subr`/`subi` con 0
 - Suma/resta → `addi`/`subi`, `addr`/`subr`
 - Multiplicación/división → `muli`/`divi`, `mulr`/`divr`
+- **While loops** → etiquetas + `jz`/`jmp` (saltos condicionales)
 
 ## Estado Actual de Pruebas
 
@@ -45,11 +46,13 @@ El proyecto solo pasaba las pruebas básicas (15/15) pero fallaba en las pruebas
 - Todas las pruebas originales funcionando  
 - Sin regresiones
 
-### Pruebas Extendidas: ✅ 18/38 (47% success rate)
+### Pruebas Extendidas: ✅ 19/38 (50% success rate) 🎯
 - **Errores léxicos**: ✅ Resueltos (underscores)
 - **Operadores faltantes**: ✅ Minus unario + operaciones aritméticas implementados
 - **Generación de código**: ✅ Funcionando para casos básicos
-- **Asignaciones**: ✅ Implementadas (con optimizaciones pendientes)
+- **Asignaciones**: ✅ Implementadas 
+- **Estructuras de control**: ✅ While loops implementados
+- **Errores semánticos**: ✅ 2 tests adicionales arreglados (e20, e21)
 - **Error sintáctico**: ❌ Persiste en archivos complejos
 
 ## Problemas Pendientes
@@ -85,20 +88,22 @@ Aún falta implementar:
 
 ## Conclusión
 
-**Estado: 18/38 pruebas pasando (47% success rate)**
+**Estado: 19/38 pruebas pasando (50% success rate) 🎯**
 
 Se ha implementado un traductor funcional con:
 - ✅ Soporte completo para underscores en identificadores
 - ✅ Operador menos unario con precedencia correcta  
 - ✅ Operaciones aritméticas básicas (+, -, *, /)
 - ✅ Sistema de asignaciones funcionando
+- ✅ **While loops con saltos condicionales**
+- ✅ **Errores semánticos corregidos** (formato de mensajes)
 - ✅ Generación de código M2R real para casos nuevos
 - ✅ Compatibilidad total con pruebas existentes
 
 **Principales limitaciones actuales:**
-1. Problemas de gramática con sintaxis compleja (múltiples declaraciones por línea)
-2. Faltan estructuras de control (`if`, `while`, `loop`)
+1. Problemas de gramática con sintaxis compleja 
+2. Faltan más estructuras de control (`if`, `loop`) 
 3. Falta soporte completo para arrays
-4. Optimizaciones pendientes en generación de código
+4. Algunos problemas específicos con archivos de prueba
 
 El framework está sólido y permite expandir funcionalidades incrementalmente manteniendo compatibilidad.

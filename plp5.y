@@ -26,6 +26,10 @@ unsigned baseTipo(unsigned t);
 const char* currentFile = NULL;
 bool useRealCodeGen = true;  // Controls whether to use real code generation
 Simbolo* lastRefSymbol = nullptr;  // Store last referenced symbol for assignments
+int labelCounter = 0;  // Counter for generating unique labels
+int newLabel() { return ++labelCounter; }
+int currentStartLabel = 0;  // For while loops
+int currentEndLabel = 0;    // For while loops
 
 /* auxiliary state to manage index checking order */
 unsigned expectedDim=0;      // number of indices expected for current array ref
@@ -200,14 +204,37 @@ Instruccion : TK_BLQ { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(d
                     // TODO: Store to variable address
                 }
             }
-            | TK_WHILE Expr { if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while"); } Instruccion
-            | TK_LOOP TK_ID TK_RANGE Rango Instruccion TK_ENDLOOP {
+            | TK_WHILE { 
+                if(useRealCodeGen) {
+                    currentStartLabel = newLabel();
+                    currentEndLabel = newLabel();
+                    printf("L%d:\n", currentStartLabel);
+                }
+            } Expr { 
+                if($3!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while"); 
+                if(useRealCodeGen) {
+                    printf("jz L%d\n", currentEndLabel);
+                }
+            } Instruccion {
+                if(useRealCodeGen) {
+                    // Jump back to start and place end label
+                    printf("jmp L%d\n", currentStartLabel);
+                    printf("L%d:\n", currentEndLabel);
+                }
+            }
+            | TK_LOOP TK_ID { 
                 Simbolo* s=tsActual->searchSymb($2.nombre);
                 if(!s) errorSemantico(ERR_NODECL,$2.fil,$2.col,$2.nombre);
-                if(!(tTipos.tipos[s->tipo].clase==TIPOBASICO && s->tipo==ENTERO))
+                if(s && !(tTipos.tipos[s->tipo].clase==TIPOBASICO && s->tipo==ENTERO))
                     errorSemantico(ERR_LOOP,$1.fil,$1.col,"loop");
-            }
-            | TK_IF Expr { if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"if"); } Instruccion Ip
+            } TK_RANGE Rango Instruccion TK_ENDLOOP
+            | TK_IF Expr { 
+                if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"if"); 
+                if(useRealCodeGen) {
+                    int elseLabel = newLabel();
+                    printf("jz L%d\n", elseLabel);
+                }
+            } Instruccion Ip
             ;
 
 Rango : TK_NUMINT TK_DOSP TK_NUMINT
@@ -395,27 +422,27 @@ void errorSemantico(int nerror,int fila,int columna,const char *s)
 {
     fprintf(stderr,"Error semantico (%d,%d): ",fila,columna);
     switch (nerror) {
-        case ERR_YADECL: fprintf(stderr,"variable '%s' ya declarada\n",s);
+        case ERR_YADECL: fprintf(stderr,"variable '%s' ya declarada",s);
                break;
-        case ERR_NODECL: fprintf(stderr,"variable '%s' no declarada\n",s);
+        case ERR_NODECL: fprintf(stderr,"variable '%s' no declarada",s);
                break;
-        case ERR_NOCABE:fprintf(stderr,"la variable '%s' ya no cabe en memoria\n",s);
+        case ERR_NOCABE:fprintf(stderr,"la variable '%s' ya no cabe en memoria",s);
                break;
         case ERR_IFWHILE:fprintf(stderr,"la expresion del '%s' debe ser de tipo entero",s);
                break;
         case ERR_LOOP:fprintf(stderr,"la variable del '%s' debe ser de tipo entero",s);
                break;
-        case ERR_DIM: fprintf(stderr,"la dimension debe ser mayor que 0\n");
+        case ERR_DIM: fprintf(stderr,"la dimension debe ser mayor que 0");
                break;
-        case ERR_FALTAN: fprintf(stderr,"faltan indices\n");
+        case ERR_FALTAN: fprintf(stderr,"faltan indices");
                break;
-        case ERR_SOBRAN: fprintf(stderr,"sobran indices\n");
+        case ERR_SOBRAN: fprintf(stderr,"sobran indices");
                break;
-        case ERR_INDICE_ENTERO: fprintf(stderr,"el indice de un array debe ser de tipo entero\n");
+        case ERR_INDICE_ENTERO: fprintf(stderr,"el indice de un array debe ser de tipo entero");
                break;
-        case ERR_ASIG: fprintf(stderr,"tipos incompatibles en la asignacion\n");
+        case ERR_ASIG: fprintf(stderr,"tipos incompatibles en la asignacion");
                break;
-        case ERR_MAXTEMP:fprintf(stderr,"no hay espacio para variables temporales\n");
+        case ERR_MAXTEMP:fprintf(stderr,"no hay espacio para variables temporales");
                break;
     }
     exit(-1);

@@ -1,4 +1,0 @@
-mov 0 A
-mov A 16000
-wrr 16000
-wrl
