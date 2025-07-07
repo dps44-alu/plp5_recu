@@ -1,0 +1,10 @@
+mov 0 A
+mov #123 A
+mov 1 A
+mov #456 A
+mov 2 A
+mov #789 A
+mov 3 A
+mov #12 A
+mov 3 A
+mov $9.898 A
