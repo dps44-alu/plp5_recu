@@ -95,6 +95,7 @@ unsigned baseTipo(unsigned t);
 
 const char* currentFile = NULL;
 bool useRealCodeGen = true;  // Controls whether to use real code generation
+Simbolo* lastRefSymbol = nullptr;  // Store last referenced symbol for assignments
 
 /* auxiliary state to manage index checking order */
 unsigned expectedDim=0;      // number of indices expected for current array ref
@@ -103,7 +104,7 @@ bool ignoreNodecl=false;     // true when indices beyond expectedDim are parsed
 Simbolo* refSimb=nullptr;    // temporal storage for ref symbol in mid rules
 
 
-#line 107 "plp5.tab.c"
+#line 108 "plp5.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -577,11 +578,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    61,    61,    61,   152,   153,   154,   157,   157,   158,
-     162,   170,   184,   194,   194,   195,   201,   201,   204,   205,
-     208,   209,   210,   213,   226,   230,   226,   250,   254,   261,
-     261,   263,   264,   267,   268,   271,   275,   279,   280,   281,
-     298,   299,   302,   305,   307,   308,   319,   325
+       0,    62,    62,    62,   153,   154,   155,   158,   158,   159,
+     169,   177,   191,   203,   203,   204,   210,   210,   213,   214,
+     217,   218,   219,   222,   237,   241,   237,   261,   265,   272,
+     272,   276,   290,   293,   307,   310,   314,   318,   319,   320,
+     337,   338,   341,   344,   346,   347,   358,   364
 };
 #endif
 
@@ -937,15 +938,15 @@ yydestruct (const char *yymsg,
   switch (yykind)
     {
     case YYSYMBOL_LExpr: /* LExpr  */
-#line 46 "plp5.y"
+#line 47 "plp5.y"
             { delete ((*yyvaluep).list); }
-#line 943 "plp5.tab.c"
+#line 944 "plp5.tab.c"
         break;
 
     case YYSYMBOL_Dim: /* Dim  */
-#line 46 "plp5.y"
+#line 47 "plp5.y"
             { delete ((*yyvaluep).list); }
-#line 949 "plp5.tab.c"
+#line 950 "plp5.tab.c"
         break;
 
       default:
@@ -1213,7 +1214,7 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* $@1: %empty  */
-#line 61 "plp5.y"
+#line 62 "plp5.y"
                                        { 
             tsActual = new TablaSimbolos(NULL); 
             dirActual=0; 
@@ -1227,11 +1228,11 @@ yyreduce:
                 }
             }
         }
-#line 1231 "plp5.tab.c"
+#line 1232 "plp5.tab.c"
     break;
 
   case 3: /* Programa: TK_FN TK_ID TK_PARI TK_PARD $@1 Cod TK_ENDFN  */
-#line 73 "plp5.y"
+#line 74 "plp5.y"
                        {
             // Generate hardcoded output for existing tests to maintain compatibility
             if(!useRealCodeGen && currentFile){
@@ -1309,32 +1310,38 @@ yyreduce:
             }
             printf("halt\n");
         }
-#line 1313 "plp5.tab.c"
+#line 1314 "plp5.tab.c"
     break;
 
   case 7: /* $@2: %empty  */
-#line 157 "plp5.y"
+#line 158 "plp5.y"
                      { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(dirActual); }
-#line 1319 "plp5.tab.c"
+#line 1320 "plp5.tab.c"
     break;
 
   case 8: /* Instruccion: TK_BLQ $@2 Cod TK_FBLQ  */
-#line 157 "plp5.y"
+#line 158 "plp5.y"
                                                                                                          { dirActual=pilaDir.back(); pilaDir.pop_back(); tsActual=tsActual->getPadre(); }
-#line 1325 "plp5.tab.c"
+#line 1326 "plp5.tab.c"
     break;
 
   case 9: /* Instruccion: TK_LET Ref TK_ASIG Expr  */
-#line 158 "plp5.y"
+#line 159 "plp5.y"
                                       {
                 if(!((yyvsp[-2].tipo)==(yyvsp[0].tipo) || ((yyvsp[-2].tipo)==REAL && (yyvsp[0].tipo)==ENTERO)))
                     errorSemantico(ERR_ASIG,(yyvsp[-1].pos).fil,(yyvsp[-1].pos).col,"=");
+                
+                if(useRealCodeGen && lastRefSymbol) {
+                    // The expression result is in A, store it to the variable
+                    printf("mov A %d\n", lastRefSymbol->dir);
+                    lastRefSymbol = nullptr;
+                }
             }
-#line 1334 "plp5.tab.c"
+#line 1341 "plp5.tab.c"
     break;
 
   case 10: /* Instruccion: TK_VAR TK_ID TipoOpt  */
-#line 162 "plp5.y"
+#line 169 "plp5.y"
                                    {
                 Simbolo s; s.nombre=(yyvsp[-1].id).nombre; s.tipo=(yyvsp[0].tipo); s.dir=dirActual; s.tam=tamTipo((yyvsp[0].tipo));
                 if(!tsActual->newSymb(s))
@@ -1343,11 +1350,11 @@ yyreduce:
                     errorSemantico(ERR_NOCABE,(yyvsp[-1].id).fil,(yyvsp[-1].id).col,(yyvsp[-1].id).nombre);
                 dirActual += s.tam;
             }
-#line 1347 "plp5.tab.c"
+#line 1354 "plp5.tab.c"
     break;
 
   case 11: /* Instruccion: TK_PRINT Expr  */
-#line 170 "plp5.y"
+#line 177 "plp5.y"
                             {
                 if(useRealCodeGen) {
                     if((yyvsp[0].tipo) == REAL) {
@@ -1362,49 +1369,51 @@ yyreduce:
                     printf("wrl\n");
                 }
             }
-#line 1366 "plp5.tab.c"
+#line 1373 "plp5.tab.c"
     break;
 
   case 12: /* Instruccion: TK_READ Ref  */
-#line 184 "plp5.y"
+#line 191 "plp5.y"
                           {
+                // For READ, we need to handle it differently than expressions
+                // We'll implement proper read functionality later
                 if(useRealCodeGen) {
                     if((yyvsp[0].tipo) == REAL) {
                         printf("rdr A\n");
                     } else {
                         printf("rdi A\n");
                     }
-                    // Store the read value to the variable (need to implement variable storage)
+                    // TODO: Store to variable address
                 }
             }
-#line 1381 "plp5.tab.c"
+#line 1390 "plp5.tab.c"
     break;
 
   case 13: /* $@3: %empty  */
-#line 194 "plp5.y"
+#line 203 "plp5.y"
                             { if((yyvsp[0].tipo)!=ENTERO) errorSemantico(ERR_IFWHILE,(yyvsp[-1].pos).fil,(yyvsp[-1].pos).col,"while"); }
-#line 1387 "plp5.tab.c"
+#line 1396 "plp5.tab.c"
     break;
 
   case 15: /* Instruccion: TK_LOOP TK_ID TK_RANGE Rango Instruccion TK_ENDLOOP  */
-#line 195 "plp5.y"
+#line 204 "plp5.y"
                                                                   {
                 Simbolo* s=tsActual->searchSymb((yyvsp[-4].id).nombre);
                 if(!s) errorSemantico(ERR_NODECL,(yyvsp[-4].id).fil,(yyvsp[-4].id).col,(yyvsp[-4].id).nombre);
                 if(!(tTipos.tipos[s->tipo].clase==TIPOBASICO && s->tipo==ENTERO))
                     errorSemantico(ERR_LOOP,(yyvsp[-5].pos).fil,(yyvsp[-5].pos).col,"loop");
             }
-#line 1398 "plp5.tab.c"
+#line 1407 "plp5.tab.c"
     break;
 
   case 16: /* $@4: %empty  */
-#line 201 "plp5.y"
+#line 210 "plp5.y"
                          { if((yyvsp[0].tipo)!=ENTERO) errorSemantico(ERR_IFWHILE,(yyvsp[-1].pos).fil,(yyvsp[-1].pos).col,"if"); }
-#line 1404 "plp5.tab.c"
+#line 1413 "plp5.tab.c"
     break;
 
   case 23: /* Ref: TK_ID  */
-#line 213 "plp5.y"
+#line 222 "plp5.y"
             {
         Simbolo* s=tsActual->searchSymb((yyvsp[0].id).nombre);
         if(!s){
@@ -1415,32 +1424,34 @@ yyreduce:
                 errorSemantico(ERR_FALTAN,(yyvsp[0].id).fil,(yyvsp[0].id).col,(yyvsp[0].id).nombre);
             // Generate code to load variable value into accumulator
             if(useRealCodeGen) printf("mov %d A\n", s->dir);
+            // Store symbol for potential assignment use
+            lastRefSymbol = s;
             (yyval.tipo) = baseTipo(s->tipo);
         }
         }
-#line 1422 "plp5.tab.c"
+#line 1433 "plp5.tab.c"
     break;
 
   case 24: /* $@5: %empty  */
-#line 226 "plp5.y"
+#line 237 "plp5.y"
             {
             refSimb=tsActual->searchSymb((yyvsp[0].id).nombre);
             if(!refSimb){ if(!ignoreNodecl) errorSemantico(ERR_NODECL,(yyvsp[0].id).fil,(yyvsp[0].id).col,(yyvsp[0].id).nombre); expectedDim=0; }
             else expectedDim=numDim(refSimb->tipo);
         }
-#line 1432 "plp5.tab.c"
+#line 1443 "plp5.tab.c"
     break;
 
   case 25: /* $@6: %empty  */
-#line 230 "plp5.y"
+#line 241 "plp5.y"
                   {
             currIndex=1;
         }
-#line 1440 "plp5.tab.c"
+#line 1451 "plp5.tab.c"
     break;
 
   case 26: /* Ref: TK_ID $@5 TK_CORI $@6 LExpr TK_CORD  */
-#line 232 "plp5.y"
+#line 243 "plp5.y"
                         {
             Simbolo* s=refSimb;
             if(!s){ (yyval.tipo) = ENTERO; delete (yyvsp[-1].list); }
@@ -1457,96 +1468,122 @@ yyreduce:
                 delete (yyvsp[-1].list);
             }
         }
-#line 1461 "plp5.tab.c"
+#line 1472 "plp5.tab.c"
     break;
 
   case 27: /* LExpr: Index  */
-#line 250 "plp5.y"
+#line 261 "plp5.y"
               {
             (yyval.list) = new ListIndices();
             (yyval.list)->tipos.push_back((yyvsp[0].tipo));
         }
-#line 1470 "plp5.tab.c"
+#line 1481 "plp5.tab.c"
     break;
 
   case 28: /* LExpr: LExpr TK_COMA Index  */
-#line 254 "plp5.y"
+#line 265 "plp5.y"
                             {
             (yyvsp[-2].list)->tipos.push_back((yyvsp[0].tipo));
             (yyvsp[-2].list)->seps.push_back((yyvsp[-1].pos));
             (yyval.list) = (yyvsp[-2].list);
         }
-#line 1480 "plp5.tab.c"
+#line 1491 "plp5.tab.c"
     break;
 
   case 29: /* $@7: %empty  */
-#line 261 "plp5.y"
+#line 272 "plp5.y"
         { ignoreNodecl = (currIndex>expectedDim); }
-#line 1486 "plp5.tab.c"
+#line 1497 "plp5.tab.c"
     break;
 
   case 30: /* Index: $@7 Expr  */
-#line 261 "plp5.y"
+#line 272 "plp5.y"
                                                          { (yyval.tipo)=(yyvsp[0].tipo); ignoreNodecl=false; currIndex++; }
-#line 1492 "plp5.tab.c"
+#line 1503 "plp5.tab.c"
     break;
 
   case 31: /* Expr: Expr TK_OPAS Term  */
-#line 263 "plp5.y"
-                         { (yyval.tipo) = ((yyvsp[-2].tipo)==REAL || (yyvsp[0].tipo)==REAL)? REAL:ENTERO; }
-#line 1498 "plp5.tab.c"
+#line 276 "plp5.y"
+                         { 
+         if(useRealCodeGen) {
+             int temp = nuevaTemp();
+             printf("mov A %d\n", temp);
+             if((yyvsp[-2].tipo) == REAL || (yyvsp[0].tipo) == REAL) {
+                 if((yyvsp[-1].opi).op == '+') printf("addr %d A\n", temp);
+                 else printf("subr %d A\n", temp);
+             } else {
+                 if((yyvsp[-1].opi).op == '+') printf("addi %d A\n", temp);
+                 else printf("subi %d A\n", temp);
+             }
+         }
+         (yyval.tipo) = ((yyvsp[-2].tipo)==REAL || (yyvsp[0].tipo)==REAL)? REAL:ENTERO; 
+     }
+#line 1522 "plp5.tab.c"
     break;
 
   case 32: /* Expr: Term  */
-#line 264 "plp5.y"
+#line 290 "plp5.y"
             { (yyval.tipo) = (yyvsp[0].tipo); }
-#line 1504 "plp5.tab.c"
+#line 1528 "plp5.tab.c"
     break;
 
   case 33: /* Term: Term TK_OPMD Factor  */
-#line 267 "plp5.y"
-                           { (yyval.tipo) = ((yyvsp[-2].tipo)==REAL || (yyvsp[0].tipo)==REAL)? REAL:ENTERO; }
-#line 1510 "plp5.tab.c"
+#line 293 "plp5.y"
+                           { 
+         if(useRealCodeGen) {
+             int temp = nuevaTemp();
+             printf("mov A %d\n", temp);
+             if((yyvsp[-2].tipo) == REAL || (yyvsp[0].tipo) == REAL) {
+                 if((yyvsp[-1].opi).op == '*') printf("mulr %d A\n", temp);
+                 else printf("divr %d A\n", temp);
+             } else {
+                 if((yyvsp[-1].opi).op == '*') printf("muli %d A\n", temp);
+                 else printf("divi %d A\n", temp);
+             }
+         }
+         (yyval.tipo) = ((yyvsp[-2].tipo)==REAL || (yyvsp[0].tipo)==REAL)? REAL:ENTERO; 
+     }
+#line 1547 "plp5.tab.c"
     break;
 
   case 34: /* Term: Factor  */
-#line 268 "plp5.y"
+#line 307 "plp5.y"
               { (yyval.tipo) = (yyvsp[0].tipo); }
-#line 1516 "plp5.tab.c"
+#line 1553 "plp5.tab.c"
     break;
 
   case 35: /* Factor: TK_NUMINT  */
-#line 271 "plp5.y"
+#line 310 "plp5.y"
                    { 
            if(useRealCodeGen) printf("mov #%d A\n", (yyvsp[0].numi).val);
            (yyval.tipo) = ENTERO; 
        }
-#line 1525 "plp5.tab.c"
+#line 1562 "plp5.tab.c"
     break;
 
   case 36: /* Factor: TK_NUMREAL  */
-#line 275 "plp5.y"
+#line 314 "plp5.y"
                     { 
            if(useRealCodeGen) printf("mov $%g A\n", (yyvsp[0].numr).val);
            (yyval.tipo) = REAL; 
        }
-#line 1534 "plp5.tab.c"
+#line 1571 "plp5.tab.c"
     break;
 
   case 37: /* Factor: TK_PARI Expr TK_PARD  */
-#line 279 "plp5.y"
+#line 318 "plp5.y"
                               { (yyval.tipo) = (yyvsp[-1].tipo); }
-#line 1540 "plp5.tab.c"
+#line 1577 "plp5.tab.c"
     break;
 
   case 38: /* Factor: Ref  */
-#line 280 "plp5.y"
+#line 319 "plp5.y"
              { (yyval.tipo) = (yyvsp[0].tipo); }
-#line 1546 "plp5.tab.c"
+#line 1583 "plp5.tab.c"
     break;
 
   case 39: /* Factor: TK_OPAS Factor  */
-#line 281 "plp5.y"
+#line 320 "plp5.y"
                         { 
            if((yyvsp[-1].opi).op != '-') {
                msgError(ERRSINT, (yyvsp[-1].opi).fil, (yyvsp[-1].opi).col, "+");
@@ -1562,35 +1599,35 @@ yyreduce:
            }
            (yyval.tipo) = (yyvsp[0].tipo); 
        }
-#line 1566 "plp5.tab.c"
+#line 1603 "plp5.tab.c"
     break;
 
   case 40: /* TipoOpt: TK_DOSP Tipo  */
-#line 298 "plp5.y"
+#line 337 "plp5.y"
                        { (yyval.tipo) = (yyvsp[0].tipo); }
-#line 1572 "plp5.tab.c"
+#line 1609 "plp5.tab.c"
     break;
 
   case 41: /* TipoOpt: %empty  */
-#line 299 "plp5.y"
+#line 338 "plp5.y"
                       { (yyval.tipo) = ENTERO; }
-#line 1578 "plp5.tab.c"
+#line 1615 "plp5.tab.c"
     break;
 
   case 43: /* SType: TK_INT  */
-#line 306 "plp5.y"
+#line 345 "plp5.y"
       { (yyval.tipo) = ENTERO; }
-#line 1584 "plp5.tab.c"
+#line 1621 "plp5.tab.c"
     break;
 
   case 44: /* SType: TK_REAL  */
-#line 307 "plp5.y"
+#line 346 "plp5.y"
                 { (yyval.tipo) = REAL; }
-#line 1590 "plp5.tab.c"
+#line 1627 "plp5.tab.c"
     break;
 
   case 45: /* SType: TK_ARRAY SType Dim  */
-#line 308 "plp5.y"
+#line 347 "plp5.y"
                            {
             ListIndices* l=(yyvsp[0].list);
             unsigned b=(yyvsp[-1].tipo);
@@ -1600,33 +1637,33 @@ yyreduce:
             (yyval.tipo) = b;
             delete l;
         }
-#line 1604 "plp5.tab.c"
+#line 1641 "plp5.tab.c"
     break;
 
   case 46: /* Dim: TK_NUMINT  */
-#line 319 "plp5.y"
+#line 358 "plp5.y"
                 {
             (yyval.list) = new ListIndices();
             if((yyvsp[0].numi).val<=0) errorSemantico(ERR_DIM,(yyvsp[0].numi).fil,(yyvsp[0].numi).col,"");
             (yyval.list)->tipos.push_back((yyvsp[0].numi).val);
             Pos p; p.fil=(yyvsp[0].numi).fil; p.col=(yyvsp[0].numi).col; (yyval.list)->seps.push_back(p);
         }
-#line 1615 "plp5.tab.c"
+#line 1652 "plp5.tab.c"
     break;
 
   case 47: /* Dim: TK_NUMINT TK_COMA Dim  */
-#line 325 "plp5.y"
+#line 364 "plp5.y"
                             {
             if((yyvsp[-2].numi).val<=0) errorSemantico(ERR_DIM,(yyvsp[-2].numi).fil,(yyvsp[-2].numi).col,"");
             (yyvsp[0].list)->tipos.insert((yyvsp[0].list)->tipos.begin(), (yyvsp[-2].numi).val);
             (yyvsp[0].list)->seps.insert((yyvsp[0].list)->seps.begin(), (yyvsp[-1].pos));
             (yyval.list) = (yyvsp[0].list);
         }
-#line 1626 "plp5.tab.c"
+#line 1663 "plp5.tab.c"
     break;
 
 
-#line 1630 "plp5.tab.c"
+#line 1667 "plp5.tab.c"
 
       default: break;
     }
@@ -1819,7 +1856,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 333 "plp5.y"
+#line 372 "plp5.y"
 
 unsigned tamTipo(unsigned t){
     unTipo tt = tTipos.tipos[t];

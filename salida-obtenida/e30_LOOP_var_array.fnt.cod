@@ -1,0 +1,4 @@
+mov #0 A
+mov A 16000
+wri 16000
+wrl

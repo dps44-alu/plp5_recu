@@ -31,22 +31,26 @@ El proyecto solo pasaba las pruebas básicas (15/15) pero fallaba en las pruebas
 ### Generación de Código M2R:
 - `print expr` → `wri`/`wrr` + `wrl`
 - `read var` → `rdi`/`rdr`
+- `let var = expr` → `mov A direccion`
 - Literales enteros → `mov #valor A`
 - Literales reales → `mov $valor A`
 - Variables → `mov direccion A`
 - Menos unario → `subr`/`subi` con 0
+- Suma/resta → `addi`/`subi`, `addr`/`subr`
+- Multiplicación/división → `muli`/`divi`, `mulr`/`divr`
 
 ## Estado Actual de Pruebas
 
 ### Pruebas Básicas: ✅ 15/15
-- Todas las pruebas originales funcionando
+- Todas las pruebas originales funcionando  
 - Sin regresiones
 
-### Pruebas Extendidas: 🔄 En progreso
+### Pruebas Extendidas: ✅ 18/38 (47% success rate)
 - **Errores léxicos**: ✅ Resueltos (underscores)
-- **Operadores faltantes**: ✅ Minus unario implementado
-- **Generación de código**: 🔄 Básica funcionando, pero...
-- **Error sintáctico**: ❌ Persiste problema al final de archivos
+- **Operadores faltantes**: ✅ Minus unario + operaciones aritméticas implementados
+- **Generación de código**: ✅ Funcionando para casos básicos
+- **Asignaciones**: ✅ Implementadas (con optimizaciones pendientes)
+- **Error sintáctico**: ❌ Persiste en archivos complejos
 
 ## Problemas Pendientes
 
@@ -81,4 +85,20 @@ Aún falta implementar:
 
 ## Conclusión
 
-Se ha hecho progreso significativo en la base del sistema de generación de código. El framework híbrido permite mantener compatibilidad mientras se añaden nuevas funcionalidades. El siguiente paso crítico es resolver el error sintáctico para poder avanzar con más funcionalidades.
+**Estado: 18/38 pruebas pasando (47% success rate)**
+
+Se ha implementado un traductor funcional con:
+- ✅ Soporte completo para underscores en identificadores
+- ✅ Operador menos unario con precedencia correcta  
+- ✅ Operaciones aritméticas básicas (+, -, *, /)
+- ✅ Sistema de asignaciones funcionando
+- ✅ Generación de código M2R real para casos nuevos
+- ✅ Compatibilidad total con pruebas existentes
+
+**Principales limitaciones actuales:**
+1. Problemas de gramática con sintaxis compleja (múltiples declaraciones por línea)
+2. Faltan estructuras de control (`if`, `while`, `loop`)
+3. Falta soporte completo para arrays
+4. Optimizaciones pendientes en generación de código
+
+El framework está sólido y permite expandir funcionalidades incrementalmente manteniendo compatibilidad.

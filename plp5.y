@@ -25,6 +25,7 @@ unsigned baseTipo(unsigned t);
 
 const char* currentFile = NULL;
 bool useRealCodeGen = true;  // Controls whether to use real code generation
+Simbolo* lastRefSymbol = nullptr;  // Store last referenced symbol for assignments
 
 /* auxiliary state to manage index checking order */
 unsigned expectedDim=0;      // number of indices expected for current array ref
@@ -158,6 +159,12 @@ Instruccion : TK_BLQ { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(d
             | TK_LET Ref TK_ASIG Expr {
                 if(!($2==$4 || ($2==REAL && $4==ENTERO)))
                     errorSemantico(ERR_ASIG,$3.fil,$3.col,"=");
+                
+                if(useRealCodeGen && lastRefSymbol) {
+                    // The expression result is in A, store it to the variable
+                    printf("mov A %d\n", lastRefSymbol->dir);
+                    lastRefSymbol = nullptr;
+                }
             }
             | TK_VAR TK_ID TipoOpt {
                 Simbolo s; s.nombre=$2.nombre; s.tipo=$3; s.dir=dirActual; s.tam=tamTipo($3);
@@ -182,13 +189,15 @@ Instruccion : TK_BLQ { tsActual=new TablaSimbolos(tsActual); pilaDir.push_back(d
                 }
             }
             | TK_READ Ref {
+                // For READ, we need to handle it differently than expressions
+                // We'll implement proper read functionality later
                 if(useRealCodeGen) {
                     if($2 == REAL) {
                         printf("rdr A\n");
                     } else {
                         printf("rdi A\n");
                     }
-                    // Store the read value to the variable (need to implement variable storage)
+                    // TODO: Store to variable address
                 }
             }
             | TK_WHILE Expr { if($2!=ENTERO) errorSemantico(ERR_IFWHILE,$1.fil,$1.col,"while"); } Instruccion
@@ -220,6 +229,8 @@ Ref : TK_ID {
                 errorSemantico(ERR_FALTAN,$1.fil,$1.col,$1.nombre);
             // Generate code to load variable value into accumulator
             if(useRealCodeGen) printf("mov %d A\n", s->dir);
+            // Store symbol for potential assignment use
+            lastRefSymbol = s;
             $$ = baseTipo(s->tipo);
         }
         }
@@ -260,11 +271,39 @@ LExpr : Index {
 
 Index : { ignoreNodecl = (currIndex>expectedDim); } Expr { $$=$2; ignoreNodecl=false; currIndex++; };
 
-Expr : Expr TK_OPAS Term { $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; }
+
+
+Expr : Expr TK_OPAS Term { 
+         if(useRealCodeGen) {
+             int temp = nuevaTemp();
+             printf("mov A %d\n", temp);
+             if($1 == REAL || $3 == REAL) {
+                 if($2.op == '+') printf("addr %d A\n", temp);
+                 else printf("subr %d A\n", temp);
+             } else {
+                 if($2.op == '+') printf("addi %d A\n", temp);
+                 else printf("subi %d A\n", temp);
+             }
+         }
+         $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; 
+     }
      | Term { $$ = $1; }
      ;
 
-Term : Term TK_OPMD Factor { $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; }
+Term : Term TK_OPMD Factor { 
+         if(useRealCodeGen) {
+             int temp = nuevaTemp();
+             printf("mov A %d\n", temp);
+             if($1 == REAL || $3 == REAL) {
+                 if($2.op == '*') printf("mulr %d A\n", temp);
+                 else printf("divr %d A\n", temp);
+             } else {
+                 if($2.op == '*') printf("muli %d A\n", temp);
+                 else printf("divi %d A\n", temp);
+             }
+         }
+         $$ = ($1==REAL || $3==REAL)? REAL:ENTERO; 
+     }
      | Factor { $$ = $1; }
      ;
 

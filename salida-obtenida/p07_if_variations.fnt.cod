@@ -1,0 +1,57 @@
+mov 0 A
+mov #1 A
+mov A 0
+mov 1 A
+mov #0 A
+mov A 1
+mov #100 A
+mov A 16000
+wri 16000
+wrl
+mov 0 A
+mov #1 A
+mov A 16001
+wri 16001
+wrl
+mov #200 A
+mov A 16002
+wri 16002
+wrl
+mov 1 A
+mov #0 A
+mov A 16003
+wri 16003
+wrl
+mov 0 A
+mov #2 A
+mov A 16004
+wri 16004
+wrl
+mov #300 A
+mov A 16005
+wri 16005
+wrl
+mov 1 A
+mov #0 A
+mov A 16006
+wri 16006
+wrl
+mov 1 A
+mov #0 A
+mov A 16007
+wri 16007
+wrl
+mov 0 A
+mov #3 A
+mov A 16008
+wri 16008
+wrl
+mov 0 A
+mov #0 A
+mov A 16009
+wri 16009
+wrl
+mov #400 A
+mov A 16010
+wri 16010
+wrl
