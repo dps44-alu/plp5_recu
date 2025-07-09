@@ -24,6 +24,7 @@ NUMINT {DIG}+
 "/*" { BEGIN(COMMENT); }
 <COMMENT>"*/" { BEGIN(INITIAL); }
 <COMMENT>\n { col=1; }
+<COMMENT><<EOF>> { msgError(ERRLEXEOF,yylineno,col,"EOF"); }
 <COMMENT>. { }
 
 [ \t\r]+ { /* skip blanks, column updated in YY_USER_ACTION */ }

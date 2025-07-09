@@ -77,9 +77,9 @@ extern char *yytext;
 %type <tipo> SType
 %type <tinfo> Type IT Dim
 %type <code> E T F Ref
-%type <code> Cod I Blq Ip Fun S
+%type <code> Cod I Instr Blq Ip Fun S
 %type <rango> Range
-%type <num> LExpr
+%type <num> LExpr Mark
 
 %%
 S : Fun { codigoFinal = $1->cod; }
@@ -111,7 +111,12 @@ Cod : Cod PYC I { $$ = new CodeAttr( mergeCode(*$1,*$3) ); }
     | I { $$ = $1; }
     ;
 
-I : Blq { $$ = $1; }
+I : Mark Instr { ctemp=$1; $$=$2; }
+    ;
+
+Mark : /* empty */ { $$ = ctemp; }
+
+Instr : Blq { $$ = $1; }
    | LET Ref ASIG E {
         if(!(( $2->tipo==1 && $4->tipo==0) || $2->tipo==$4->tipo ))
              errorSemantico(ERR_ASIG,@3.first_line,@3.first_column,"");
