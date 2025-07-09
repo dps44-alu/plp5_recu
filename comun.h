@@ -76,21 +76,21 @@ inline CodeAttr loadFromAddr(const CodeAttr &addr,unsigned tipo){
     return r;
 }
 
-inline CodeAttr convertType(const CodeAttr &a,unsigned tipo){
+inline CodeAttr convertType(CodeAttr a,unsigned tipo){
     if(a.tipo==tipo) return a;
-    CodeAttr r; r.tipo=tipo; r.dir=nuevaTemp();
-    r.cod=a.cod;
-    r.cod+="mov "+std::to_string(a.dir)+" A\n";
-    if(tipo==1) r.cod+="itor\n"; else r.cod+="rtoi\n";
-    r.cod+="mov A "+std::to_string(r.dir)+"\n";
-    return r;
+    a.cod += "mov "+std::to_string(a.dir)+" A\n";
+    if(tipo==1) a.cod += "itor\n"; else a.cod += "rtoi\n";
+    a.cod += "mov A "+std::to_string(a.dir)+"\n";
+    a.tipo = tipo;
+    return a;
 }
 
 inline CodeAttr binOp(const CodeAttr &a,const CodeAttr &b,const std::string &op){
     unsigned t=(a.tipo==1 || b.tipo==1)?1:0;
-    CodeAttr l=convertType(a,t), r=convertType(b,t);
-    CodeAttr res; res.tipo=t; res.dir=nuevaTemp();
-    res.cod=l.cod + r.cod;
+    CodeAttr l=convertType(a,t);
+    CodeAttr r=convertType(b,t);
+    CodeAttr res; res.tipo=t; res.dir=l.dir;
+    res.cod = l.cod + r.cod;
     res.cod += "mov "+std::to_string(l.dir)+" A\n";
     if(op=="+") res.cod += (t?"addr ":"addi ")+std::to_string(r.dir)+"\n";
     else if(op=="-") res.cod += (t?"subr ":"subi ")+std::to_string(r.dir)+"\n";
