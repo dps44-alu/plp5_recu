@@ -1,0 +1,5 @@
+fn main()
+  var a : array int 15999; /* Ocupa posiciones 0-15998 */
+  var b : int;             /* Ocupa la posición 15999. Memoria llena (16000 posiciones usadas). */
+  var c : int;             /* Error semantico (4,7): la variable 'c' ya no cabe en memoria */
+endfn

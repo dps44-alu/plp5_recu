@@ -1,0 +1,13 @@
+fn main()
+  var i;
+  print 1000;
+  loop i range 3:1 /* Debería imprimir 3, 2, 1 */
+    print i
+  endloop;
+
+  print 2000;
+  loop i range 5:5 /* Debería imprimir 5 */
+    print i
+  endloop;
+  print 3000;
+endfn
