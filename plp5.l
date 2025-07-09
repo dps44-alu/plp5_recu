@@ -2,7 +2,9 @@
 #include "plp5.tab.h"
 #include "comun.h"
 #include <string.h>
+#include <stack>
 int col = 1;                /* columna actual */
+static int commentDepth = 0;
 #define YY_USER_ACTION \
     yylloc.first_line = yylineno; \
     yylloc.first_column = col; \
@@ -21,10 +23,17 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 NUMREAL {DIG}+"."{DIG}+
 NUMINT {DIG}+
 %%
-"/*" { BEGIN(COMMENT); }
-<COMMENT>"*/" { BEGIN(INITIAL); }
+"/*" {
+    if(commentDepth==0) BEGIN(COMMENT);
+    commentDepth++; }
+<COMMENT>"/*" { commentDepth++; }
+<COMMENT>"*/" {
+    if(--commentDepth==0) BEGIN(INITIAL);
+}
 <COMMENT>\n { col=1; }
-<COMMENT><<EOF>> { msgError(ERRLEXEOF,yylineno,col,"EOF"); }
+<COMMENT><<EOF>> {
+    msgError(ERRLEXEOF,yylineno,col,"EOF");
+}
 <COMMENT>. { }
 
 [ \t\r]+ { /* skip blanks, column updated in YY_USER_ACTION */ }
