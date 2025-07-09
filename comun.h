@@ -68,6 +68,14 @@ inline CodeAttr loadVal(int dir,unsigned tipo){
     return r;
 }
 
+inline CodeAttr loadFromAddr(const CodeAttr &addr,unsigned tipo){
+    CodeAttr r; r.tipo=tipo; r.dir=nuevaTemp();
+    r.cod=addr.cod;
+    r.cod+="mov @A A\n";
+    r.cod+="mov A "+std::to_string(r.dir)+"\n";
+    return r;
+}
+
 inline CodeAttr convertType(const CodeAttr &a,unsigned tipo){
     if(a.tipo==tipo) return a;
     CodeAttr r; r.tipo=tipo; r.dir=nuevaTemp();

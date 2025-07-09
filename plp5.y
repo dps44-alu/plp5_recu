@@ -22,8 +22,9 @@ bool primeraIndice=true;
 int corFila=0, corCol=0;
 int comaFila=0, comaCol=0;
 int indiceDepth=0;
-struct SavedIndex { bool en; bool prim; int corF; int corC; int comaF; int comaC; };
+struct SavedIndex { bool en; bool prim; int corF; int corC; int comaF; int comaC; size_t pos; };
 std::vector<SavedIndex> idxStack;
+std::vector<CodeAttr*> idxExprs;
 std::string codigoFinal;
 std::stack<unsigned> pilaIf;
 std::stack<unsigned> pilaElse;
@@ -114,9 +115,10 @@ I : Blq { $$ = $1; }
              errorSemantico(ERR_ASIG,@3.first_line,@3.first_column,"");
         CodeAttr tmp = convertType(*$4,$2->tipo);
         CodeAttr *res = new CodeAttr();
-        res->cod = $2->cod + tmp.cod;
-        res->cod += "mov "+std::to_string(tmp.dir)+" A\n";
-        res->cod += "mov A "+std::to_string($2->dir)+"\n";
+        res->cod = tmp.cod;
+        res->cod += "mov "+std::to_string(tmp.dir)+" B\n";
+        res->cod += $2->cod;
+        res->cod += "mov B @A\n";
         res->tipo = 0; res->dir=0;
         $$=res;
       }
@@ -131,7 +133,7 @@ I : Blq { $$ = $1; }
         CodeAttr e=*($2); CodeAttr *r=new CodeAttr(); r->cod=e.cod; r->cod+="mov "+std::to_string(e.dir)+" A\n"; r->cod+=(e.tipo?"wrr A\n":"wri A\n"); r->cod+="wrl\n"; $$=r;
       }
    | READ Ref {
-        CodeAttr *r=$2; CodeAttr *res=new CodeAttr(); res->cod=r->cod; res->cod+=(r->tipo?"rdr ":"rdi ")+std::to_string(r->dir)+"\n"; $$=res;
+        CodeAttr *r=$2; CodeAttr *res=new CodeAttr(); res->cod=r->cod; res->cod+=(r->tipo?"rdr @A\n":"rdi @A\n"); $$=res;
       }
    | WHILE E I {
         if($2->tipo!=0) errorSemantico(ERR_IFWHILE,@1.first_line,@1.first_column,"while");
@@ -216,7 +218,7 @@ T : T OPMD F { $$ = new CodeAttr(binOp(*$1,*$3,$2)); }
 F : NUMINT { $$ = new CodeAttr(constInt($1)); }
   | NUMREAL { $$ = new CodeAttr(constReal($1)); }
   | PARI E PARD { $$=$2; }
-  | Ref { $$= new CodeAttr(loadVal($1->dir,$1->tipo)); }
+  | Ref { $$= new CodeAttr(loadFromAddr(*$1,$1->tipo)); }
   ;
 
 Ref : ID {
@@ -224,11 +226,15 @@ Ref : ID {
         CodeAttr *r=new CodeAttr(); r->cod=""; r->dir=0; r->tipo=0;
         if(!s){
             if(indiceDepth==0) errorSemantico(ERR_NODECL,@1.first_line,@1.first_column,$1);
-        }else{ r->tipo=s->tipo; r->dir=s->dir; }
+            r->cod="mov #0 A\n";
+        }else{
+            r->tipo=s->tipo;
+            r->cod="mov #"+to_string(s->dir)+" A\n";
+        }
         $$=r;
     }
     | ID CORI {
-        SavedIndex tmp{enIndices,primeraIndice,corFila,corCol,comaFila,comaCol};
+        SavedIndex tmp{enIndices,primeraIndice,corFila,corCol,comaFila,comaCol,idxExprs.size()};
         idxStack.push_back(tmp);
         enIndices=true; primeraIndice=true;
         corFila=@2.first_line; corCol=@2.first_column;
@@ -241,12 +247,21 @@ Ref : ID {
         if(!s){
             errorSemantico(ERR_NODECL,@1.first_line,@1.first_column,$1);
         }else{
-            unsigned t=s->tipo; unsigned dims=0;
-            while(tt.tipos[t].clase==ARRAY){ dims++; t=tt.tipos[t].tipoBase; }
+            unsigned t=s->tipo; unsigned dims=0; std::vector<unsigned> dsz;
+            while(tt.tipos[t].clase==ARRAY){ dsz.push_back(tt.tipos[t].tamano); dims++; t=tt.tipos[t].tipoBase; }
             if($4<dims) errorSemantico(ERR_FALTAN,@5.first_line,@5.first_column,"");
             if($4>dims) errorSemantico(ERR_SOBRAN,comaFila,comaCol,"");
             t=s->tipo; for(int i=0;i<$4 && tt.tipos[t].clase==ARRAY;i++) t=tt.tipos[t].tipoBase;
-            r->tipo=t; r->dir=s->dir; /* ignoring indexing address */
+            r->tipo=t;
+            size_t pos=idxStack.back().pos; std::vector<CodeAttr*> exprs(idxExprs.begin()+pos,idxExprs.end()); idxExprs.resize(pos);
+            std::vector<unsigned> mult(dims); unsigned prod=1; for(int i=dims; i>0; --i){ mult[i-1]=prod; prod*=dsz[i-1]; }
+            CodeAttr off=constInt(s->dir);
+            for(size_t i=0;i<exprs.size();i++){
+                CodeAttr idx=convertType(*exprs[i],0);
+                if(mult[i]!=1){ CodeAttr m=constInt(mult[i]); idx=binOp(idx,m,"*"); }
+                off=binOp(off,idx,"+");
+            }
+            r->cod=off.cod+"mov "+to_string(off.dir)+" A\n";
         }
         SavedIndex rec=idxStack.back();
         idxStack.pop_back();
@@ -260,6 +275,7 @@ LExpr : LExpr COMA E {
           $$=$1+1;
           primeraIndice=false;
           comaFila=@2.first_line; comaCol=@2.first_column;
+          idxExprs.push_back($3);
        }
       | E {
           if(enIndices && $1->tipo!=0){
@@ -268,6 +284,7 @@ LExpr : LExpr COMA E {
           }
           $$=1;
           primeraIndice=false;
+          idxExprs.push_back($1);
        }
       ;
 %%
