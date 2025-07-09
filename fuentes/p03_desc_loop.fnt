@@ -1,0 +1,8 @@
+fn main()
+
+  var i;
+  loop i range 3:0
+    print i
+  endloop;
+
+endfn
