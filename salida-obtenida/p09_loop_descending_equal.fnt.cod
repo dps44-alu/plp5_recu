@@ -1,0 +1,50 @@
+mov #1000 A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #3 A
+mov A 0
+L0
+mov 0 A
+subi #2
+jz L1
+mov #0 A
+mov @A A
+mov A 16001
+mov 16001 A
+wri A
+wrl
+mov 0 A
+addi #1
+mov A 0
+jmp L0
+L1
+mov #2000 A
+mov A 16002
+mov 16002 A
+wri A
+wrl
+mov #5 A
+mov A 0
+L2
+mov 0 A
+subi #6
+jz L3
+mov #0 A
+mov @A A
+mov A 16003
+mov 16003 A
+wri A
+wrl
+mov 0 A
+addi #1
+mov A 0
+jmp L2
+L3
+mov #3000 A
+mov A 16004
+mov 16004 A
+wri A
+wrl
+halt

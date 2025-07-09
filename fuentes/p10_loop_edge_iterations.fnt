@@ -1,0 +1,18 @@
+fn main()
+  var i;
+  print 100;
+  loop i range 0 /* Equivalente a 'loop i range 0:0'. Debería imprimir 0. */
+    print i
+  endloop;
+
+  print 200;
+  loop i range 1:0 /* Debería imprimir 1, 0. */
+    print i
+  endloop;
+
+  print 300;
+  loop i range 0:1 /* Debería imprimir 0, 1. */
+    print i
+  endloop;
+  print 400;
+endfn

@@ -1,0 +1,3 @@
+fn main()
+  read x; /* Error semantico (2,8): variable 'x' no declarada */
+endfn
