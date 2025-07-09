@@ -1,0 +1,13 @@
+/* Comentario al inicio del fichero */
+fn main() /* Comentario junto a fn main() */
+  var a; /* Variable declaration
+            Este comentario ocupa
+            multiples lineas. */
+  let a = 10; /* Asignacion */ print a; /* Print en la misma linea despues de punto y coma y comentario */
+  /* Otro comentario
+     de multiples lineas
+     justo antes de un print. */
+  print 20;
+  /* Comentario final antes de endfn */
+endfn /* Comentario al final del fichero */
+/* Incluso un comentario despues de endfn */
