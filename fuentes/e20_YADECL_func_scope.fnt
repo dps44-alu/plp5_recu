@@ -1,0 +1,4 @@
+fn main()
+  var a : int;
+  var a : real; /* Error semantico (3,7): variable 'a' ya declarada */
+endfn
