@@ -1,36 +1,14 @@
-mov #1000 A
+mov #100 A
 mov A 16000
 mov 16000 A
 wri A
 wrl
-mov #3 A
+mov #0 A
 mov A 0
 L0
 mov 0 A
-subi #0
-jz L1
-mov #0 A
-mov @A A
-mov A 16000
-mov 16000 A
-wri A
-wrl
-mov 0 A
 subi #1
-mov A 0
-jmp L0
-L1
-mov #2000 A
-mov A 16000
-mov 16000 A
-wri A
-wrl
-mov #5 A
-mov A 0
-L2
-mov 0 A
-subi #6
-jz L3
+jz L1
 mov #0 A
 mov @A A
 mov A 16000
@@ -40,9 +18,53 @@ wrl
 mov 0 A
 addi #1
 mov A 0
+jmp L0
+L1
+mov #200 A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #1 A
+mov A 0
+L2
+mov 0 A
+subi #-1
+jz L3
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov 0 A
+subi #1
+mov A 0
 jmp L2
 L3
-mov #3000 A
+mov #300 A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #0 A
+mov A 0
+L4
+mov 0 A
+subi #2
+jz L5
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov 0 A
+addi #1
+mov A 0
+jmp L4
+L5
+mov #400 A
 mov A 16000
 mov 16000 A
 wri A

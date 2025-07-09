@@ -1,0 +1,17 @@
+mov #10 A
+mov A 16000
+mov 16000 B
+mov #0 A
+mov B @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #20 A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+halt

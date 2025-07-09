@@ -1,0 +1,241 @@
+mov #0 A
+mov A 16000
+mov 16000 B
+mov #8 A
+mov B @A
+L2
+mov #2 A
+mov A 16000
+mov #8 A
+mov @A A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
+jz L3
+mov #0 A
+mov A 16002
+mov 16002 B
+mov #9 A
+mov B @A
+L0
+mov #2 A
+mov A 16002
+mov #9 A
+mov @A A
+mov A 16003
+mov 16002 A
+subi 16003
+mov A 16002
+mov 16002 A
+jz L1
+mov #0 A
+mov A 16008
+mov 16008 B
+mov #0 A
+mov A 16006
+mov #8 A
+mov @A A
+mov A 16004
+mov #2 A
+mov A 16007
+mov 16004 A
+muli 16007
+mov A 16004
+mov 16006 A
+addi 16004
+mov A 16006
+mov #9 A
+mov @A A
+mov A 16005
+mov 16006 A
+addi 16005
+mov A 16006
+mov 16006 A
+mov B @A
+mov #9 A
+mov @A A
+mov A 16004
+mov #1 A
+mov A 16005
+mov 16004 A
+addi 16005
+mov A 16004
+mov 16004 B
+mov #9 A
+mov B @A
+jmp L0
+L1
+mov #8 A
+mov @A A
+mov A 16002
+mov #1 A
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
+mov #8 A
+mov B @A
+jmp L2
+L3
+mov #0 A
+mov A 16000
+mov 16000 B
+mov #8 A
+mov B @A
+L4
+mov #2 A
+mov A 16000
+mov #8 A
+mov @A A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
+jz L5
+mov #4 A
+mov A 16004
+mov #8 A
+mov @A A
+mov A 16002
+mov #2 A
+mov A 16005
+mov 16002 A
+muli 16005
+mov A 16002
+mov 16004 A
+addi 16002
+mov A 16004
+mov #0 A
+mov A 16003
+mov 16004 A
+addi 16003
+mov A 16004
+mov 16004 A
+rdi @A
+mov #4 A
+mov A 16004
+mov #8 A
+mov @A A
+mov A 16002
+mov #2 A
+mov A 16005
+mov 16002 A
+muli 16005
+mov A 16002
+mov 16004 A
+addi 16002
+mov A 16004
+mov #1 A
+mov A 16003
+mov 16004 A
+addi 16003
+mov A 16004
+mov 16004 A
+rdi @A
+mov #8 A
+mov @A A
+mov A 16002
+mov #1 A
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
+mov #8 A
+mov B @A
+jmp L4
+L5
+mov #0 A
+mov A 16000
+mov 16000 B
+mov #10 A
+mov B @A
+mov #0 A
+mov A 8
+L6
+mov 8 A
+subi #2
+jz L7
+mov #0 A
+mov A 9
+L8
+mov 9 A
+subi #2
+jz L9
+mov #10 A
+mov @A A
+mov A 16000
+mov #0 A
+mov A 16003
+mov #8 A
+mov @A A
+mov A 16001
+mov #2 A
+mov A 16004
+mov 16001 A
+muli 16004
+mov A 16001
+mov 16003 A
+addi 16001
+mov A 16003
+mov #9 A
+mov @A A
+mov A 16002
+mov 16003 A
+addi 16002
+mov A 16003
+mov 16003 A
+mov @A A
+mov A 16005
+mov #4 A
+mov A 16008
+mov #9 A
+mov @A A
+mov A 16006
+mov #2 A
+mov A 16009
+mov 16006 A
+muli 16009
+mov A 16006
+mov 16008 A
+addi 16006
+mov A 16008
+mov #8 A
+mov @A A
+mov A 16007
+mov 16008 A
+addi 16007
+mov A 16008
+mov 16008 A
+mov @A A
+mov A 16010
+mov 16005 A
+subi 16010
+mov A 16005
+mov 16000 A
+addi 16005
+mov A 16000
+mov 16000 B
+mov #10 A
+mov B @A
+mov 9 A
+addi #1
+mov A 9
+jmp L8
+L9
+mov 8 A
+addi #1
+mov A 8
+jmp L6
+L7
+mov #10 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+halt

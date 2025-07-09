@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 50 "plp5.y"
+#line 54 "plp5.y"
 
 #include "comun.h"
 
@@ -100,7 +100,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 57 "plp5.y"
+#line 61 "plp5.y"
 
     char* lexema;
     int num;

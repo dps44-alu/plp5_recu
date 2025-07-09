@@ -5,29 +5,29 @@ mov #1 A
 mov B @A
 mov #1 A
 mov @A A
-mov A 16001
-mov 16001 A
+mov A 16000
+mov 16000 A
 itor
-mov A 16002
-mov 16002 B
+mov A 16000
+mov 16000 B
 mov #0 A
 mov B @A
 mov #0 A
 mov @A A
-mov A 16003
-mov 16003 A
+mov A 16000
+mov 16000 A
 wrr A
 wrl
 mov #1 A
 mov @A A
-mov A 16004
-mov 16004 B
+mov A 16000
+mov 16000 B
 mov #2 A
 mov B @A
 mov #2 A
 mov @A A
-mov A 16005
-mov 16005 A
+mov A 16000
+mov 16000 A
 wri A
 wrl
 mov #0 A
@@ -38,8 +38,8 @@ subi #10
 jz L1
 mov #3 A
 mov @A A
-mov A 16006
-mov 16006 A
+mov A 16000
+mov 16000 A
 wri A
 wrl
 mov 3 A
@@ -48,164 +48,164 @@ mov A 3
 jmp L0
 L1
 mov $77.770000 A
-mov A 16007
-mov 16007 A
+mov A 16000
+mov 16000 A
 wrr A
 wrl
 mov #0 A
-mov A 16008
-mov 16008 B
+mov A 16000
+mov 16000 B
 mov #4 A
 mov B @A
 mov #0 A
-mov A 16009
-mov 16009 B
+mov A 16000
+mov 16000 B
 mov #3 A
 mov B @A
 L2
 mov #10 A
-mov A 16010
+mov A 16000
 mov #3 A
 mov @A A
-mov A 16011
-mov 16010 A
-subi 16011
-mov A 16012
-mov 16012 A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
 jz L3
 mov #3 A
 mov @A A
-mov A 16013
-mov 16013 A
+mov A 16002
+mov 16002 A
 wri A
 wrl
 mov #3 A
 mov @A A
-mov A 16014
+mov A 16002
 mov #1 A
-mov A 16015
-mov 16014 A
-addi 16015
-mov A 16016
-mov 16016 B
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
 mov #3 A
 mov B @A
 mov #4 A
 mov @A A
-mov A 16017
+mov A 16002
 mov #3 A
 mov @A A
-mov A 16018
-mov 16017 A
-addi 16018
-mov A 16019
-mov 16019 B
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
 mov #5 A
 mov B @A
 mov #5 A
 mov @A A
-mov A 16020
-mov 16020 B
+mov A 16002
+mov 16002 B
 mov #4 A
 mov B @A
 jmp L2
 L3
 mov #4 A
 mov @A A
-mov A 16021
+mov A 16000
 mov #2 A
-mov A 16022
+mov A 16001
 mov #4 A
-mov A 16023
-mov 16022 A
-addi 16023
-mov A 16024
+mov A 16002
+mov 16001 A
+addi 16002
+mov A 16001
 mov #1 A
-mov A 16025
-mov 16024 A
-subi 16025
-mov A 16026
-mov 16021 A
-divi 16026
-mov A 16027
-mov 16027 A
+mov A 16003
+mov 16001 A
+subi 16003
+mov A 16001
+mov 16000 A
+divi 16001
+mov A 16000
+mov 16000 A
 wri A
 wrl
 mov #4 A
 mov @A A
-mov A 16028
+mov A 16000
 mov #55 A
-mov A 16029
-mov 16028 A
-subi 16029
-mov A 16030
-mov 16030 A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
 jz L5
 mov #4 A
 mov @A A
-mov A 16031
-mov 16031 A
+mov A 16002
+mov 16002 A
 itor
-mov A 16033
+mov A 16002
 mov $10.000000 A
-mov A 16032
-mov 16033 A
-mulr 16032
-mov A 16034
-mov 16034 A
+mov A 16003
+mov 16002 A
+mulr 16003
+mov A 16002
+mov 16002 A
 wrr A
 wrl
 jmp L4
 L5
 mov #4 A
 mov @A A
-mov A 16035
+mov A 16002
 mov #54 A
-mov A 16036
-mov 16035 A
-subi 16036
-mov A 16037
-mov 16037 A
+mov A 16003
+mov 16002 A
+subi 16003
+mov A 16002
+mov 16002 A
 jz L6
 mov #4 A
 mov @A A
-mov A 16038
-mov 16038 A
+mov A 16004
+mov 16004 A
 itor
-mov A 16040
+mov A 16004
 mov $1000.000000 A
-mov A 16039
-mov 16040 A
-mulr 16039
-mov A 16041
-mov 16041 A
+mov A 16005
+mov 16004 A
+mulr 16005
+mov A 16004
+mov 16004 A
 wrr A
 wrl
 jmp L4
 L6
 mov #4 A
 mov @A A
-mov A 16042
-mov 16042 A
+mov A 16004
+mov 16004 A
 itor
-mov A 16044
+mov A 16004
 mov $100.000000 A
-mov A 16043
-mov 16044 A
-mulr 16043
-mov A 16045
-mov 16045 A
+mov A 16005
+mov 16004 A
+mulr 16005
+mov A 16004
+mov 16004 A
 wrr A
 wrl
 L4
 mov #4 A
 mov @A A
-mov A 16046
-mov 16046 A
+mov A 16000
+mov 16000 A
 jz L8
 mov #787 A
-mov A 16047
-mov 16047 B
+mov A 16001
+mov 16001 B
 mov #1 A
 mov B @A
 jmp L7
@@ -213,8 +213,8 @@ L8
 L7
 mov #1 A
 mov @A A
-mov A 16048
-mov 16048 A
+mov A 16000
+mov 16000 A
 wri A
 wrl
 halt

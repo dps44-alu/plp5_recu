@@ -1,0 +1,165 @@
+mov #4 A
+mov A 16000
+mov 16000 B
+mov #1 A
+mov B @A
+mov #2 A
+mov A 16000
+mov 16000 B
+mov #2 A
+mov B @A
+mov #0 A
+mov A 16002
+mov #1 A
+mov @A A
+mov A 16000
+mov #2 A
+mov @A A
+mov A 16001
+mov 16000 A
+muli 16001
+mov A 16000
+mov 16002 A
+subi 16000
+mov A 16002
+mov 16002 B
+mov #0 A
+mov B @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #0 A
+mov A 16002
+mov #1 A
+mov @A A
+mov A 16000
+mov #2 A
+mov @A A
+mov A 16001
+mov 16000 A
+muli 16001
+mov A 16000
+mov 16002 A
+subi 16000
+mov A 16002
+mov 16002 B
+mov #0 A
+mov B @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #0 A
+mov A 16001
+mov #1 A
+mov @A A
+mov A 16000
+mov 16001 A
+subi 16000
+mov A 16001
+mov #2 A
+mov @A A
+mov A 16002
+mov 16001 A
+addi 16002
+mov A 16001
+mov 16001 B
+mov #0 A
+mov B @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov #0 A
+mov A 16002
+mov #1 A
+mov @A A
+mov A 16000
+mov #2 A
+mov @A A
+mov A 16001
+mov 16000 A
+addi 16001
+mov A 16000
+mov 16002 A
+subi 16000
+mov A 16002
+mov 16002 B
+mov #0 A
+mov B @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov $4.000000 A
+mov A 16000
+mov 16000 B
+mov #4 A
+mov B @A
+mov $2.000000 A
+mov A 16000
+mov 16000 B
+mov #5 A
+mov B @A
+mov #0 A
+mov A 16002
+mov 16002 A
+itor
+mov A 16002
+mov #4 A
+mov @A A
+mov A 16000
+mov #5 A
+mov @A A
+mov A 16001
+mov 16000 A
+mulr 16001
+mov A 16000
+mov 16002 A
+subr 16000
+mov A 16002
+mov 16002 B
+mov #3 A
+mov B @A
+mov #3 A
+mov @A A
+mov A 16000
+mov 16000 A
+wrr A
+wrl
+mov #0 A
+mov A 16002
+mov 16002 A
+itor
+mov A 16002
+mov #4 A
+mov @A A
+mov A 16000
+mov #5 A
+mov @A A
+mov A 16001
+mov 16000 A
+divr 16001
+mov A 16000
+mov 16002 A
+subr 16000
+mov A 16002
+mov 16002 B
+mov #3 A
+mov B @A
+mov #3 A
+mov @A A
+mov A 16000
+mov 16000 A
+wrr A
+wrl
+halt

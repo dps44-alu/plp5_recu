@@ -4,127 +4,127 @@ mov 16000 B
 mov #10 A
 mov B @A
 mov #0 A
-mov A 16001
-mov 16001 B
+mov A 16000
+mov 16000 B
 mov #11 A
 mov B @A
 L0
 mov #10 A
+mov A 16000
+mov #11 A
+mov @A A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
+jz L1
+mov #11 A
+mov @A A
+mov A 16004
+mov 16004 A
+itor
+mov A 16004
+mov 16004 B
+mov #0 A
+mov A 16003
+mov #11 A
+mov @A A
+mov A 16002
+mov 16003 A
+addi 16002
+mov A 16003
+mov 16003 A
+mov B @A
+mov #10 A
+mov @A A
 mov A 16002
 mov #11 A
 mov @A A
 mov A 16003
 mov 16002 A
-subi 16003
-mov A 16004
-mov 16004 A
-jz L1
-mov #11 A
-mov @A A
-mov A 16008
-mov 16008 A
-itor
-mov A 16009
-mov 16009 B
-mov #0 A
-mov A 16006
-mov #11 A
-mov @A A
-mov A 16005
-mov 16006 A
-addi 16005
-mov A 16007
-mov 16007 A
-mov B @A
-mov #10 A
-mov @A A
-mov A 16010
-mov #11 A
-mov @A A
-mov A 16011
-mov 16010 A
-addi 16011
-mov A 16012
-mov 16012 B
+addi 16003
+mov A 16002
+mov 16002 B
 mov #10 A
 mov B @A
 mov #11 A
 mov @A A
-mov A 16013
+mov A 16002
 mov #1 A
-mov A 16014
-mov 16013 A
-addi 16014
-mov A 16015
-mov 16015 B
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
 mov #11 A
 mov B @A
 jmp L0
 L1
 mov $0.000000 A
-mov A 16016
-mov 16016 B
+mov A 16000
+mov 16000 B
 mov #12 A
 mov B @A
 mov #0 A
-mov A 16017
-mov 16017 B
+mov A 16000
+mov 16000 B
 mov #11 A
 mov B @A
 L2
 mov #10 A
-mov A 16018
+mov A 16000
 mov #11 A
 mov @A A
-mov A 16019
-mov 16018 A
-subi 16019
-mov A 16020
-mov 16020 A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
 jz L3
 mov #12 A
 mov @A A
-mov A 16021
+mov A 16002
 mov #0 A
-mov A 16023
+mov A 16004
 mov #11 A
 mov @A A
-mov A 16022
-mov 16023 A
-addi 16022
-mov A 16024
-mov 16024 A
+mov A 16003
+mov 16004 A
+addi 16003
+mov A 16004
+mov 16004 A
 mov @A A
-mov A 16025
-mov 16021 A
-addr 16025
-mov A 16026
-mov 16026 B
+mov A 16005
+mov 16002 A
+addr 16005
+mov A 16002
+mov 16002 B
 mov #12 A
 mov B @A
 mov #11 A
 mov @A A
-mov A 16027
+mov A 16002
 mov #1 A
-mov A 16028
-mov 16027 A
-addi 16028
-mov A 16029
-mov 16029 B
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
 mov #11 A
 mov B @A
 jmp L2
 L3
 mov #12 A
 mov @A A
-mov A 16030
-mov 16030 A
+mov A 16000
+mov 16000 A
 wrr A
 wrl
 mov #10 A
 mov @A A
-mov A 16031
-mov 16031 A
+mov A 16000
+mov 16000 A
 wri A
 wrl
 halt

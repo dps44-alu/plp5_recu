@@ -6,100 +6,100 @@ mov B @A
 mov #0 A
 rdi @A
 mov #1 A
-mov A 16001
-mov 16001 B
+mov A 16000
+mov 16000 B
 mov #1 A
 mov B @A
 L6
 mov #0 A
 mov @A A
-mov A 16002
+mov A 16000
 mov #1 A
 mov @A A
-mov A 16003
-mov 16002 A
-subi 16003
-mov A 16004
-mov 16004 A
+mov A 16001
+mov 16000 A
+subi 16001
+mov A 16000
+mov 16000 A
 jz L7
 mov #1 A
 mov @A A
-mov A 16005
+mov A 16002
 mov #1 A
-mov A 16006
-mov 16005 A
-subi 16006
-mov A 16007
-mov 16007 B
+mov A 16003
+mov 16002 A
+subi 16003
+mov A 16002
+mov 16002 B
 mov #3 A
 mov B @A
 mov #1 A
-mov A 16008
-mov 16008 B
+mov A 16002
+mov 16002 B
 mov #4 A
 mov B @A
 L2
 mov #4 A
 mov @A A
-mov A 16009
+mov A 16002
 mov #3 A
 mov @A A
-mov A 16010
-mov 16009 A
-muli 16010
-mov A 16011
+mov A 16003
+mov 16002 A
+muli 16003
+mov A 16002
 mov #3 A
 mov @A A
-mov A 16012
+mov A 16004
 mov #1 A
-mov A 16013
-mov 16012 A
-subi 16013
-mov A 16014
-mov 16011 A
-muli 16014
-mov A 16015
-mov 16015 A
+mov A 16005
+mov 16004 A
+subi 16005
+mov A 16004
+mov 16002 A
+muli 16004
+mov A 16002
+mov 16002 A
 jz L3
 mov #3 A
 mov @A A
-mov A 16016
+mov A 16006
 mov #1 A
 mov @A A
-mov A 16017
+mov A 16007
 mov #3 A
 mov @A A
-mov A 16018
-mov 16017 A
-divi 16018
-mov A 16019
-mov 16016 A
-muli 16019
-mov A 16020
+mov A 16008
+mov 16007 A
+divi 16008
+mov A 16007
+mov 16006 A
+muli 16007
+mov A 16006
 mov #1 A
 mov @A A
-mov A 16021
-mov 16020 A
-subi 16021
-mov A 16022
-mov 16022 A
+mov A 16009
+mov 16006 A
+subi 16009
+mov A 16006
+mov 16006 A
 jz L1
 mov #3 A
 mov @A A
-mov A 16023
+mov A 16010
 mov #1 A
-mov A 16024
-mov 16023 A
-subi 16024
-mov A 16025
-mov 16025 B
+mov A 16011
+mov 16010 A
+subi 16011
+mov A 16010
+mov 16010 B
 mov #3 A
 mov B @A
 jmp L0
 L1
 mov #0 A
-mov A 16026
-mov 16026 B
+mov A 16010
+mov 16010 B
 mov #4 A
 mov B @A
 L0
@@ -107,35 +107,35 @@ jmp L2
 L3
 mov #0 A
 mov @A A
-mov A 16027
+mov A 16002
 mov #2 A
-mov A 16028
-mov 16027 A
-addi 16028
-mov A 16029
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
 mov #2 A
-mov A 16030
-mov 16029 A
-subi 16030
-mov A 16031
-mov 16031 B
+mov A 16004
+mov 16002 A
+subi 16004
+mov A 16002
+mov 16002 B
 mov #0 A
 mov B @A
 mov #4 A
 mov @A A
-mov A 16032
-mov 16032 A
+mov A 16002
+mov 16002 A
 jz L5
 mov #2 A
 mov @A A
-mov A 16033
+mov A 16003
 mov #1 A
 mov @A A
-mov A 16034
-mov 16033 A
-addi 16034
-mov A 16035
-mov 16035 B
+mov A 16004
+mov 16003 A
+addi 16004
+mov A 16003
+mov 16003 B
 mov #2 A
 mov B @A
 jmp L4
@@ -143,21 +143,21 @@ L5
 L4
 mov #1 A
 mov @A A
-mov A 16036
+mov A 16002
 mov #1 A
-mov A 16037
-mov 16036 A
-addi 16037
-mov A 16038
-mov 16038 B
+mov A 16003
+mov 16002 A
+addi 16003
+mov A 16002
+mov 16002 B
 mov #1 A
 mov B @A
 jmp L6
 L7
 mov #2 A
 mov @A A
-mov A 16039
-mov 16039 A
+mov A 16000
+mov 16000 A
 wri A
 wrl
 halt
