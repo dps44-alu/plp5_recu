@@ -28,6 +28,8 @@ std::vector<CodeAttr*> idxExprs;
 std::string codigoFinal;
 std::stack<unsigned> pilaIf;
 std::stack<unsigned> pilaElse;
+struct LoopInfo { Simbolo* sym; int ini; int fin; unsigned lc; unsigned le; };
+std::vector<LoopInfo> loopStack;
 
 int nuevaTemp(void){
     if(ctemp>16383){
@@ -144,18 +146,22 @@ I : Blq { $$ = $1; }
                  "jz "+lab2+"\n"+body.cod+"jmp "+lab1+"\n"+lab2+"\n";
         $$=res;
       }
-   | LOOP ID RANGE Range I ENDLOOP {
+   | LOOP ID RANGE Range {
         Simbolo *s = ts->searchSymb($2);
         if(!s) errorSemantico(ERR_NODECL,@2.first_line,@2.first_column,$2);
         else if(!(tt.tipos[s->tipo].clase==TIPOBASICO && s->tipo==0))
             errorSemantico(ERR_LOOP,@1.first_line,@1.first_column,"loop");
-        unsigned Lc=nuevaEtiqueta(),Le=nuevaEtiqueta();
-        string lc="L"+to_string(Lc), le="L"+to_string(Le);
-        CodeAttr body=*($5); CodeAttr *res=new CodeAttr();
-        res->cod="mov #"+to_string($4.ini)+" A\nmov A "+to_string(s->dir)+"\n";
-        res->cod+=lc+"\nmov "+to_string(s->dir)+" A\nsubi #"+to_string($4.fin+1)+"\njz "+le+"\n";
+        LoopInfo info; info.sym=s; info.ini=$4.ini; info.fin=$4.fin;
+        info.lc=nuevaEtiqueta(); info.le=nuevaEtiqueta();
+        loopStack.push_back(info);
+      } I ENDLOOP {
+        LoopInfo info=loopStack.back(); loopStack.pop_back();
+        CodeAttr body=*($6); CodeAttr *res=new CodeAttr();
+        string lc="L"+to_string(info.lc), le="L"+to_string(info.le);
+        res->cod="mov #"+to_string(info.ini)+" A\nmov A "+to_string(info.sym->dir)+"\n";
+        res->cod+=lc+"\nmov "+to_string(info.sym->dir)+" A\nsubi #"+to_string(info.fin+1)+"\njz "+le+"\n";
         res->cod+=body.cod;
-        res->cod+="mov "+to_string(s->dir)+" A\naddi #1\nmov A "+to_string(s->dir)+"\n";
+        res->cod+="mov "+to_string(info.sym->dir)+" A\naddi #1\nmov A "+to_string(info.sym->dir)+"\n";
         res->cod+="jmp "+lc+"\n"+le+"\n";
         $$=res;
       }
