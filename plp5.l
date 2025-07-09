@@ -1,20 +1,14 @@
 %{
-/*
- * Analizador léxico construido con Flex. Se encarga de traducir
- * la entrada en tokens para el parser generado con Bison y de
- * mantener la posición (línea y columna) de cada lexema.
- */
 #include "plp5.tab.h"
 #include "comun.h"
+
 #include <string.h>
 
-int col = 1;                /* columna actual de la entrada */
-int commentDepth = 0;       /* nivel de anidamiento de comentarios */
+int col = 1;            // Columna actual de la entrada 
+int commentDepth = 0;   // nivel de anidamiento de comentarios 
 
-/*
- * Macro que actualiza la información de localización de cada token
- * utilizando las variables proporcionadas por Flex.
- */
+// Actualiza la información de localización de cada 
+// token utilizando las variables de Flex
 #define YY_USER_ACTION \
     yylloc.first_line = yylineno; \
     yylloc.first_column = col; \
@@ -32,63 +26,68 @@ DIG [0-9]
 ID [a-zA-Z][a-zA-Z0-9_]*
 NUMREAL {DIG}+"."{DIG}+
 NUMINT {DIG}+
+
 %%
-"/*" {                      /* inicio de comentario */
-    if(commentDepth==0) BEGIN(COMMENT);
-    commentDepth++; }
-<COMMENT>"/*" { commentDepth++; }       /* comentario anidado */
-<COMMENT>"*/" {                         /* fin de comentario */
-    if(--commentDepth==0) BEGIN(INITIAL);
-}
-<COMMENT>\r\n { yylineno++; col=1; }
-<COMMENT>\r    { yylineno++; col=1; }
-<COMMENT>\n    { col=1; }
-<COMMENT><<EOF>> {                 /* EOF sin cerrar comentario */
-    msgError(ERRLEXEOF,yylineno,col,"EOF");
-}
+
+"/*" {                                              // Inicio de comentario
+        if (commentDepth == 0) BEGIN(COMMENT);
+        commentDepth++; 
+    }
+<COMMENT>"/*" { commentDepth++; }                   // Comentario anidado 
+<COMMENT>"*/" {                                     // Fin de comentario 
+        if(--commentDepth == 0) BEGIN(INITIAL);
+    }
+<COMMENT>\r\n   { yylineno++; col=1; }
+<COMMENT>\r     { yylineno++; col=1; }
+<COMMENT>\n     { col = 1; }
+<COMMENT><<EOF>> {                                  // EOF sin cerrar comentario 
+        msgError(ERRLEXEOF, yylineno, col, "EOF");
+    }
 <COMMENT>. { }
 
-[ \t]+ { /* ignorar espacios, columna actualizada en YY_USER_ACTION */ }
-\r\n { yylineno++; col=1; }
-\r   { yylineno++; col=1; }
-\n   { col=1; }
+[ \t]+  { /* Ignorar espacios, columna actualizada en YY_USER_ACTION */ }
+\r\n    { yylineno++; col=1; }
+\r      { yylineno++; col=1; }
+\n      { col=1; }
 
-"fn"        { return FN; }       /* palabras clave */
-"endfn"     { return ENDFN; }
-"int"       { return INTKW; }
-"real"      { return REALKW; }
+"fn"        { return FN;      }                                     // Palabras clave 
+"endfn"     { return ENDFN;   }
+"int"       { return INTKW;   }
+"real"      { return REALKW;  }
 "array"     { return ARRAYKW; }
-"let"       { return LET; }
-"var"       { return VAR; }
-"if"        { return IF; }
-"else"      { return ELSE; }
-"elif"      { return ELIF; }
-"fi"        { return FI; }
-"while"     { return WHILE; }
-"loop"      { return LOOP; }
-"range"     { return RANGE; }
+"let"       { return LET;     }
+"var"       { return VAR;     }
+"if"        { return IF;      }
+"else"      { return ELSE;    }
+"elif"      { return ELIF;    }
+"fi"        { return FI;      }
+"while"     { return WHILE;   }
+"loop"      { return LOOP;    }
+"range"     { return RANGE;   }
 "endloop"   { return ENDLOOP; }
-"blq"       { return BLQ; }
-"fblq"      { return FBLQ; }
-"read"      { return READ; }
-"print"     { return PRINT; }
+"blq"       { return BLQ;     }
+"fblq"      { return FBLQ;    }
+"read"      { return READ;    }
+"print"     { return PRINT;   }
 
-"+"|"-"      { yylval.lexema=strdup(yytext); return OPAS; } /* operadores */
-"*"|"/"      { yylval.lexema=strdup(yytext); return OPMD; }
+"+"|"-"     { yylval.lexema = strdup(yytext); return OPAS; }        // Operadores
+"*"|"/"     { yylval.lexema = strdup(yytext); return OPMD; }
 "("         { return PARI; }
 ")"         { return PARD; }
 "["         { return CORI; }
 "]"         { return CORD; }
 ","         { return COMA; }
 ":"         { return DOSP; }
-";"         { return PYC; }
+";"         { return PYC;  }
 "="         { return ASIG; }
 
-{NUMREAL}   { yylval.real=atof(yytext); return NUMREAL; }    /* literales */
-{NUMINT}    { yylval.num=atoi(yytext); return NUMINT; }
-{ID}        { yylval.lexema=strdup(yytext); return ID; }
+{NUMREAL}   { yylval.real   = atof(yytext);     return NUMREAL; }   // Literales
+{NUMINT}    { yylval.num    = atoi(yytext);     return NUMINT;  }
+{ID}        { yylval.lexema = strdup(yytext);   return ID;      }
 
-.           { msgError(ERRLEXICO,yylineno,col,yytext); }    /* cualquier otro */
+.           { msgError(ERRLEXICO,yylineno,col,yytext); }            // Cualquier otro 
+
 %%
-/* Solicita a Flex que finalice al alcanzar EOF */
+
+// Solicita a Flex que finalice al alcanzar EOF 
 int yywrap(){ return 1; }

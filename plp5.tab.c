@@ -69,58 +69,83 @@
 /* First part of user prologue.  */
 #line 1 "plp5.y"
 
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <cstring>
 #include "comun.h"
 #include "TablaSimbolos.h"
 #include "TablaTipos.h"
+
+#include <string>
+#include <cstring>
 #include <stack>
 #include <vector>
+
 using namespace std;
 
-TablaSimbolos *ts = nullptr;
-TablaTipos tt;
-unsigned dirActual = 0; // direccion libre para variables
-std::stack<unsigned> pilaDir;
-unsigned baseTipo; // para construir tipos de arrays
-int ctemp = 16000;
-int etiqueta = 0;
-bool enIndices=false;
-bool primeraIndice=true;
-int corFila=0, corCol=0;
-int comaFila=0, comaCol=0;
-int indiceDepth=0;
-struct SavedIndex { bool en; bool prim; int corF; int corC; int comaF; int comaC; size_t pos; };
-std::vector<SavedIndex> idxStack;
-std::vector<CodeAttr*> idxExprs;
-std::string codigoFinal;
-std::stack<unsigned> pilaIf;
-std::stack<unsigned> pilaElse;
-struct LoopInfo { Simbolo* sym; int ini; int fin; unsigned lc; unsigned le; };
-std::vector<LoopInfo> loopStack;
+TablaSimbolos *ts = nullptr;        // Tabla de símbolos actual 
+TablaTipos tt;                      // Tabla global de tipos 
+unsigned dirActual = 0;             // Siguiente dirección libre para variables 
+stack<unsigned> pilaDir;            // Para restaurar la dirección al salir de un bloque 
+unsigned baseTipo;                  // Tipo base al construir arrays 
+int ctemp = 16000;                  // Contador de temporales 
+int etiqueta = 0;                   // Contador de etiquetas 
+bool enIndices = false;             // Estamos procesando índices de un array 
+bool primeraIndice = true;          // Se refiere al primer índice 
+int corFila = 0, corCol = 0;        // Posición del '[' inicial 
+int comaFila = 0, comaCol = 0;      // Última coma encontrada 
+int indiceDepth = 0;                // Nivel de anidamiento de índices 
+
+// Registro para restaurar flags de índices 
+struct SavedIndex {                
+    bool en; 
+    bool prim; 
+    int corF; 
+    int corC; 
+    int comaF; 
+    int comaC; 
+    size_t pos; 
+};
+
+vector<SavedIndex> idxStack;        // Pila de estados de índices 
+vector<CodeAttr*> idxExprs;         // Expresiones de cada índice 
+string codigoFinal;                 // Código generado por el programa 
+stack<unsigned> pilaIf;             // Etiquetas pendientes en if/else 
+stack<unsigned> pilaElse;
+
+struct LoopInfo { 
+    Simbolo* sym; 
+    int ini; 
+    int fin; 
+    unsigned lc; 
+    unsigned le; 
+};
+
+vector<LoopInfo> loopStack;         // Información sobre bucles anidados 
 extern int col;
 extern int commentDepth;
 
-int nuevaTemp(void){
-    if(ctemp>16383){
+// Reserva una nueva posición de temporal
+int nuevaTemp (void)
+{
+    if (ctemp > 16383)  // Sin espacio para temporales 
+    {                       
         errorSemantico(ERR_MAXTEMP,0,0,"");
     }
-    return ctemp++;
+
+    return ctemp++;     // Devuelve la posición y avanza 
 }
 
-int nuevaEtiqueta(){
+// Proporciona el número de una nueva etiqueta 
+int nuevaEtiqueta ()
+{
     return etiqueta++;
 }
 
-int yylex();
-void yyerror(const char *s);
+int yylex ();
+void yyerror (const char *s);
 extern int yylineno;
 extern char *yytext;
 
 
-#line 124 "plp5.tab.c"
+#line 149 "plp5.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -598,11 +623,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    87,    87,    90,    93,    94,    97,    98,    98,   101,
-     105,   111,   112,   113,   116,   119,   121,   122,   134,   141,
-     144,   147,   156,   156,   179,   179,   198,   199,   202,   202,
-     208,   209,   216,   219,   220,   223,   224,   228,   231,   232,
-     235,   236,   237,   238,   241,   253,   253,   290,   297
+       0,   116,   116,   122,   128,   132,   139,   146,   145,   158,
+     168,   181,   185,   189,   196,   205,   211,   215,   233,   249,
+     261,   271,   290,   289,   336,   335,   365,   370,   378,   377,
+     392,   396,   411,   417,   422,   429,   433,   445,   451,   455,
+     461,   465,   469,   473,   479,   503,   502,   608,   619
 };
 #endif
 
@@ -1601,433 +1626,671 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* S: Fun  */
-#line 87 "plp5.y"
-        { codigoFinal = (yyvsp[0].code)->cod; }
-#line 1607 "plp5.tab.c"
+#line 117 "plp5.y"
+    { 
+        codigoFinal = (yyvsp[0].code)->cod; 
+    }
+#line 1634 "plp5.tab.c"
     break;
 
   case 3: /* Fun: FN ID PARI PARD Cod ENDFN  */
-#line 90 "plp5.y"
-                                { (yyval.code) = (yyvsp[-1].code); }
-#line 1613 "plp5.tab.c"
+#line 123 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[-1].code); 
+    }
+#line 1642 "plp5.tab.c"
     break;
 
   case 4: /* SType: INTKW  */
-#line 93 "plp5.y"
-              { (yyval.tipo) = 0; }
-#line 1619 "plp5.tab.c"
+#line 129 "plp5.y"
+    { 
+        (yyval.tipo) = 0; 
+    }
+#line 1650 "plp5.tab.c"
     break;
 
   case 5: /* SType: REALKW  */
-#line 94 "plp5.y"
-               { (yyval.tipo) = 1; }
-#line 1625 "plp5.tab.c"
+#line 133 "plp5.y"
+    { 
+        (yyval.tipo) = 1; 
+    }
+#line 1658 "plp5.tab.c"
     break;
 
   case 6: /* Type: SType  */
-#line 97 "plp5.y"
-             { (yyval.tinfo).tipo=(yyvsp[0].tipo); (yyval.tinfo).tam=1; (yyval.tinfo).ndim=0; }
-#line 1631 "plp5.tab.c"
+#line 140 "plp5.y"
+    { 
+        (yyval.tinfo).tipo=(yyvsp[0].tipo); 
+        (yyval.tinfo).tam=1; 
+        (yyval.tinfo).ndim=0; 
+    }
+#line 1668 "plp5.tab.c"
     break;
 
   case 7: /* $@1: %empty  */
-#line 98 "plp5.y"
-                     { baseTipo=(yyvsp[0].tipo)==0?0:1; }
-#line 1637 "plp5.tab.c"
+#line 146 "plp5.y"
+    { 
+        baseTipo = (yyvsp[0].tipo) == 0 ? 0 : 1; 
+    }
+#line 1676 "plp5.tab.c"
     break;
 
   case 8: /* Type: ARRAYKW SType $@1 Dim  */
-#line 98 "plp5.y"
-                                                 { (yyval.tinfo).tipo=(yyvsp[0].tinfo).tipo; (yyval.tinfo).tam=(yyvsp[0].tinfo).tam; (yyval.tinfo).ndim=(yyvsp[0].tinfo).ndim; }
-#line 1643 "plp5.tab.c"
+#line 150 "plp5.y"
+    { 
+        (yyval.tinfo).tipo = (yyvsp[0].tinfo).tipo; 
+        (yyval.tinfo).tam = (yyvsp[0].tinfo).tam; 
+        (yyval.tinfo).ndim = (yyvsp[0].tinfo).ndim; 
+    }
+#line 1686 "plp5.tab.c"
     break;
 
   case 9: /* Dim: NUMINT COMA Dim  */
-#line 101 "plp5.y"
-                      {
-        if((yyvsp[-2].num)<=0) errorSemantico(ERR_DIM,(yylsp[-2]).first_line,(yylsp[-2]).first_column,"");
-        unsigned t=tt.nuevoTipoArray((yyvsp[-2].num),(yyvsp[0].tinfo).tipo); (yyval.tinfo).tipo=t; (yyval.tinfo).tam=(yyvsp[-2].num)*(yyvsp[0].tinfo).tam; (yyval.tinfo).ndim=(yyvsp[0].tinfo).ndim+1;
+#line 159 "plp5.y"
+    {
+        if ((yyvsp[-2].num) <= 0) errorSemantico(ERR_DIM, (yylsp[-2]).first_line, (yylsp[-2]).first_column, "");
+
+        unsigned t = tt.nuevoTipoArray((yyvsp[-2].num), (yyvsp[0].tinfo).tipo); 
+
+        (yyval.tinfo).tipo = t; 
+        (yyval.tinfo).tam = (yyvsp[-2].num) * (yyvsp[0].tinfo).tam; 
+        (yyval.tinfo).ndim = (yyvsp[0].tinfo).ndim + 1;
     }
-#line 1652 "plp5.tab.c"
+#line 1700 "plp5.tab.c"
     break;
 
   case 10: /* Dim: NUMINT  */
-#line 105 "plp5.y"
-             {
-        if((yyvsp[0].num)<=0) errorSemantico(ERR_DIM,(yylsp[0]).first_line,(yylsp[0]).first_column,"");
-        unsigned t=tt.nuevoTipoArray((yyvsp[0].num),baseTipo); (yyval.tinfo).tipo=t; (yyval.tinfo).tam=(yyvsp[0].num); (yyval.tinfo).ndim=1;
+#line 169 "plp5.y"
+    {
+        if((yyvsp[0].num) <= 0) errorSemantico(ERR_DIM, (yylsp[0]).first_line, (yylsp[0]).first_column, "");
+
+        unsigned t = tt.nuevoTipoArray((yyvsp[0].num), baseTipo); 
+
+        (yyval.tinfo).tipo = t; 
+        (yyval.tinfo).tam = (yyvsp[0].num); 
+        (yyval.tinfo).ndim = 1;
     }
-#line 1661 "plp5.tab.c"
-    break;
-
-  case 11: /* Cod: Cod PYC I  */
-#line 111 "plp5.y"
-                { (yyval.code) = new CodeAttr( mergeCode(*(yyvsp[-2].code),*(yyvsp[0].code)) ); }
-#line 1667 "plp5.tab.c"
-    break;
-
-  case 12: /* Cod: Cod PYC  */
-#line 112 "plp5.y"
-              { (yyval.code) = (yyvsp[-1].code); }
-#line 1673 "plp5.tab.c"
-    break;
-
-  case 13: /* Cod: I  */
-#line 113 "plp5.y"
-        { (yyval.code) = (yyvsp[0].code); }
-#line 1679 "plp5.tab.c"
-    break;
-
-  case 14: /* I: Mark Instr  */
-#line 116 "plp5.y"
-               { ctemp=(yyvsp[-1].num); (yyval.code)=(yyvsp[0].code); }
-#line 1685 "plp5.tab.c"
-    break;
-
-  case 15: /* Mark: %empty  */
-#line 119 "plp5.y"
-                   { (yyval.num) = ctemp; }
-#line 1691 "plp5.tab.c"
-    break;
-
-  case 16: /* Instr: Blq  */
-#line 121 "plp5.y"
-            { (yyval.code) = (yyvsp[0].code); }
-#line 1697 "plp5.tab.c"
-    break;
-
-  case 17: /* Instr: LET Ref ASIG E  */
-#line 122 "plp5.y"
-                    {
-        if(!(( (yyvsp[-2].code)->tipo==1 && (yyvsp[0].code)->tipo==0) || (yyvsp[-2].code)->tipo==(yyvsp[0].code)->tipo ))
-             errorSemantico(ERR_ASIG,(yylsp[-1]).first_line,(yylsp[-1]).first_column,"");
-        CodeAttr tmp = convertType(*(yyvsp[0].code),(yyvsp[-2].code)->tipo);
-        CodeAttr *res = new CodeAttr();
-        res->cod = tmp.cod;
-        res->cod += "mov "+std::to_string(tmp.dir)+" B\n";
-        res->cod += (yyvsp[-2].code)->cod;
-        res->cod += "mov B @A\n";
-        res->tipo = 0; res->dir=0;
-        (yyval.code)=res;
-      }
 #line 1714 "plp5.tab.c"
     break;
 
+  case 11: /* Cod: Cod PYC I  */
+#line 182 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(mergeCode(*(yyvsp[-2].code), *(yyvsp[0].code))); 
+    }
+#line 1722 "plp5.tab.c"
+    break;
+
+  case 12: /* Cod: Cod PYC  */
+#line 186 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[-1].code); 
+    }
+#line 1730 "plp5.tab.c"
+    break;
+
+  case 13: /* Cod: I  */
+#line 190 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1738 "plp5.tab.c"
+    break;
+
+  case 14: /* I: Mark Instr  */
+#line 197 "plp5.y"
+    { 
+        ctemp = (yyvsp[-1].num); 
+        (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1747 "plp5.tab.c"
+    break;
+
+  case 15: /* Mark: %empty  */
+#line 205 "plp5.y"
+    { 
+        (yyval.num) = ctemp; 
+    }
+#line 1755 "plp5.tab.c"
+    break;
+
+  case 16: /* Instr: Blq  */
+#line 212 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1763 "plp5.tab.c"
+    break;
+
+  case 17: /* Instr: LET Ref ASIG E  */
+#line 216 "plp5.y"
+    {
+        if (!(((yyvsp[-2].code)->tipo == 1 && (yyvsp[0].code)->tipo == 0) || (yyvsp[-2].code)->tipo == (yyvsp[0].code)->tipo ))
+        {
+            errorSemantico(ERR_ASIG, (yylsp[-1]).first_line, (yylsp[-1]).first_column, "");
+        }
+
+        CodeAttr tmp = convertType(*(yyvsp[0].code), (yyvsp[-2].code)->tipo);
+        CodeAttr *res = new CodeAttr();
+
+        res->cod = tmp.cod;
+        res->cod += "mov " + to_string(tmp.dir) + " B\n";
+        res->cod += (yyvsp[-2].code)->cod;
+        res->cod += "mov B @A\n";
+        res->tipo = 0; 
+        res->dir = 0;
+        (yyval.code) = res;
+    }
+#line 1785 "plp5.tab.c"
+    break;
+
   case 18: /* Instr: VAR ID IT  */
-#line 134 "plp5.y"
-               {
-        Simbolo s; s.nombre=(yyvsp[-1].lexema); s.tipo=(yyvsp[0].tinfo).tipo; s.dir=dirActual; s.tam=(yyvsp[0].tinfo).tam;
-        if(!ts->newSymb(s)) errorSemantico(ERR_YADECL,(yylsp[-1]).first_line,(yylsp[-1]).first_column,(yyvsp[-1].lexema));
-        if(dirActual + s.tam > 16000) errorSemantico(ERR_NOCABE,(yylsp[-1]).first_line,(yylsp[-1]).first_column,(yyvsp[-1].lexema));
+#line 234 "plp5.y"
+    {
+        Simbolo s; 
+        s.nombre = (yyvsp[-1].lexema); 
+        s.tipo = (yyvsp[0].tinfo).tipo; 
+        s.dir = dirActual; 
+        s.tam = (yyvsp[0].tinfo).tam;
+
+        if (!ts->newSymb(s)) errorSemantico(ERR_YADECL, (yylsp[-1]).first_line, (yylsp[-1]).first_column, (yyvsp[-1].lexema));
+
+        if (dirActual + s.tam > 16000) errorSemantico(ERR_NOCABE, (yylsp[-1]).first_line, (yylsp[-1]).first_column, (yyvsp[-1].lexema));
+        
         dirActual += s.tam;
+        
         (yyval.code) = new CodeAttr();
-      }
-#line 1726 "plp5.tab.c"
+    }
+#line 1805 "plp5.tab.c"
     break;
 
   case 19: /* Instr: PRINT E  */
-#line 141 "plp5.y"
-             {
-        CodeAttr e=*((yyvsp[0].code)); CodeAttr *r=new CodeAttr(); r->cod=e.cod; r->cod+="mov "+std::to_string(e.dir)+" A\n"; r->cod+=(e.tipo?"wrr A\n":"wri A\n"); r->cod+="wrl\n"; (yyval.code)=r;
-      }
-#line 1734 "plp5.tab.c"
+#line 250 "plp5.y"
+    {
+        CodeAttr e = *((yyvsp[0].code)); 
+        CodeAttr *r = new CodeAttr(); 
+
+        r->cod = e.cod; 
+        r->cod += "mov " + to_string(e.dir) + " A\n"; 
+        r->cod += (e.tipo ? "wrr A\n" : "wri A\n"); 
+        r->cod += "wrl\n"; 
+
+        (yyval.code) = r;
+    }
+#line 1821 "plp5.tab.c"
     break;
 
   case 20: /* Instr: READ Ref  */
-#line 144 "plp5.y"
-              {
-        CodeAttr *r=(yyvsp[0].code); CodeAttr *res=new CodeAttr(); res->cod=r->cod; res->cod+=(r->tipo?"rdr @A\n":"rdi @A\n"); (yyval.code)=res;
-      }
-#line 1742 "plp5.tab.c"
+#line 262 "plp5.y"
+    {
+        CodeAttr *r = (yyvsp[0].code); 
+        CodeAttr *res = new CodeAttr();
+
+        res->cod = r->cod; 
+        res->cod += (r->tipo ? "rdr @A\n" : "rdi @A\n"); 
+
+        (yyval.code) = res;
+    }
+#line 1835 "plp5.tab.c"
     break;
 
   case 21: /* Instr: WHILE E I  */
-#line 147 "plp5.y"
-               {
-        if((yyvsp[-1].code)->tipo!=0) errorSemantico(ERR_IFWHILE,(yylsp[-2]).first_line,(yylsp[-2]).first_column,"while");
-        unsigned L1=nuevaEtiqueta(), L2=nuevaEtiqueta();
-        string lab1="L"+to_string(L1), lab2="L"+to_string(L2);
-        CodeAttr cond=*((yyvsp[-1].code)); CodeAttr body=*((yyvsp[0].code)); CodeAttr *res=new CodeAttr();
-        res->cod=lab1+"\n"+cond.cod+"mov "+to_string(cond.dir)+" A\n"+
-                 "jz "+lab2+"\n"+body.cod+"jmp "+lab1+"\n"+lab2+"\n";
-        (yyval.code)=res;
-      }
-#line 1756 "plp5.tab.c"
+#line 272 "plp5.y"
+    {
+        if ((yyvsp[-1].code)->tipo != 0) errorSemantico(ERR_IFWHILE, (yylsp[-2]).first_line, (yylsp[-2]).first_column, "while");
+
+        unsigned L1 = nuevaEtiqueta(), L2 = nuevaEtiqueta();
+        string lab1 = label(L1), lab2 = label(L2);
+        CodeAttr cond = *((yyvsp[-1].code)); 
+        CodeAttr body = *((yyvsp[0].code)); 
+        CodeAttr *res = new CodeAttr();
+
+        res->cod = lab1 + "\n" + 
+                    cond.cod + "mov " + to_string(cond.dir) + " A\n" +
+                    "jz " + lab2 + "\n" + body.cod + 
+                    "jmp " + lab1 + "\n" + 
+                    lab2 + "\n";
+        
+        (yyval.code) = res;
+    }
+#line 1857 "plp5.tab.c"
     break;
 
   case 22: /* $@2: %empty  */
-#line 156 "plp5.y"
-                         {
+#line 290 "plp5.y"
+    {
         Simbolo *s = ts->searchSymb((yyvsp[-2].lexema));
-        if(!s) errorSemantico(ERR_NODECL,(yylsp[-2]).first_line,(yylsp[-2]).first_column,(yyvsp[-2].lexema));
-        else if(!(tt.tipos[s->tipo].clase==TIPOBASICO && s->tipo==0))
-            errorSemantico(ERR_LOOP,(yylsp[-3]).first_line,(yylsp[-3]).first_column,"loop");
-        LoopInfo info; info.sym=s; info.ini=(yyvsp[0].rango).ini; info.fin=(yyvsp[0].rango).fin;
-        info.lc=nuevaEtiqueta(); info.le=nuevaEtiqueta();
+
+        if (!s) 
+        {
+            errorSemantico(ERR_NODECL, (yylsp[-2]).first_line, (yylsp[-2]).first_column, (yyvsp[-2].lexema));
+        }
+        else if (!(tt.tipos[s->tipo].clase == TIPOBASICO && s->tipo == 0))
+        {
+            errorSemantico(ERR_LOOP, (yylsp[-3]).first_line, (yylsp[-3]).first_column, "loop");
+        }
+
+        LoopInfo info; 
+        info.sym = s; 
+        info.ini = (yyvsp[0].rango).ini; 
+        info.fin = (yyvsp[0].rango).fin;
+        info.lc = nuevaEtiqueta(); 
+        info.le = nuevaEtiqueta();
         loopStack.push_back(info);
-      }
-#line 1770 "plp5.tab.c"
+    }
+#line 1882 "plp5.tab.c"
     break;
 
   case 23: /* Instr: LOOP ID RANGE Range $@2 I ENDLOOP  */
-#line 164 "plp5.y"
-                  {
-        LoopInfo info=loopStack.back(); loopStack.pop_back();
-        CodeAttr body=*((yyvsp[-1].code)); CodeAttr *res=new CodeAttr();
-        string lc="L"+to_string(info.lc), le="L"+to_string(info.le);
+#line 311 "plp5.y"
+    {
+        LoopInfo info = loopStack.back(); 
+        loopStack.pop_back();
+
+        CodeAttr body = *((yyvsp[-1].code)); 
+        CodeAttr *res = new CodeAttr();
+        string lc = label(info.lc), le = label(info.le);
         int step = (info.ini <= info.fin) ? 1 : -1;
-        int limite = (step==1)? info.fin+1 : info.fin-1;
-        res->cod="mov #"+to_string(info.ini)+" A\nmov A "+to_string(info.sym->dir)+"\n";
-        res->cod+=lc+"\nmov "+to_string(info.sym->dir)+" A\nsubi #"+to_string(limite)+"\njz "+le+"\n";
-        res->cod+=body.cod;
-        res->cod+="mov "+to_string(info.sym->dir)+" A\n";
-        if(step==1) res->cod+="addi #1\n"; else res->cod+="subi #1\n";
-        res->cod+="mov A "+to_string(info.sym->dir)+"\n";
-        res->cod+="jmp "+lc+"\n"+le+"\n";
-        (yyval.code)=res;
-      }
-#line 1790 "plp5.tab.c"
+        int limite = (step == 1) ? info.fin +1 : info.fin -1;
+
+        res->cod = "mov #" + to_string(info.ini) + " A\nmov A " + to_string(info.sym->dir) + "\n";
+        res->cod += lc + "\nmov " + to_string(info.sym->dir) + " A\nsubi #" + to_string(limite);
+        res->cod += "\njz " + le + "\n"; 
+        res->cod += body.cod;
+        res->cod += "mov " + to_string(info.sym->dir) + " A\n";
+
+        if      (step == 1) res->cod += "addi #1\n"; 
+        else                res->cod += "subi #1\n";
+
+        res->cod += "mov A " + to_string(info.sym->dir) + "\n";
+        res->cod += "jmp " + lc + "\n" + le + "\n";
+        
+        (yyval.code) = res;
+    }
+#line 1911 "plp5.tab.c"
     break;
 
   case 24: /* $@3: %empty  */
-#line 179 "plp5.y"
-          {
-        if((yyvsp[0].code)->tipo!=0) errorSemantico(ERR_IFWHILE,(yylsp[-1]).first_line,(yylsp[-1]).first_column,"if");
+#line 336 "plp5.y"
+    {
+        if ((yyvsp[0].code)->tipo != 0) errorSemantico(ERR_IFWHILE, (yylsp[-1]).first_line, (yylsp[-1]).first_column, "if");
+
         unsigned lend = nuevaEtiqueta();
         unsigned lelse = nuevaEtiqueta();
         pilaIf.push(lend);
         pilaElse.push(lelse);
-      }
-#line 1802 "plp5.tab.c"
+    }
+#line 1924 "plp5.tab.c"
     break;
 
   case 25: /* Instr: IF E $@3 I Ip  */
-#line 185 "plp5.y"
-             {
-        unsigned lend = pilaIf.top(); pilaIf.pop();
-        unsigned lelse = pilaElse.top(); pilaElse.pop();
-        CodeAttr cond=*((yyvsp[-3].code)), thenCode=*((yyvsp[-1].code)), elsePart=*((yyvsp[0].code)); CodeAttr *res=new CodeAttr();
-        string sElse="L"+to_string(lelse), sEnd="L"+to_string(lend);
-        res->cod=cond.cod+"mov "+to_string(cond.dir)+" A\n"+
-                "jz "+sElse+"\n"+thenCode.cod+
-                "jmp "+sEnd+"\n"+sElse+"\n"+
-                elsePart.cod+sEnd+"\n";
-        (yyval.code)=res;
-      }
-#line 1818 "plp5.tab.c"
+#line 345 "plp5.y"
+    {
+        unsigned lend = pilaIf.top(); 
+        pilaIf.pop();
+
+        unsigned lelse = pilaElse.top(); 
+        pilaElse.pop();
+
+        CodeAttr cond = *((yyvsp[-3].code)), thenCode = *((yyvsp[-1].code)), elsePart = *((yyvsp[0].code)); 
+        CodeAttr *res = new CodeAttr();
+        string sElse = label(lelse), sEnd = label(lend);
+        
+        res->cod = cond.cod + "mov " + to_string(cond.dir) + " A\n" +
+                    "jz " + sElse + "\n" + thenCode.cod +
+                    "jmp " + sEnd + "\n" + sElse + "\n" +
+                    elsePart.cod + sEnd + "\n";
+
+        (yyval.code) = res;
+    }
+#line 1947 "plp5.tab.c"
     break;
 
   case 26: /* Range: NUMINT DOSP NUMINT  */
-#line 198 "plp5.y"
-                           { (yyval.rango).ini=(yyvsp[-2].num); (yyval.rango).fin=(yyvsp[0].num); }
-#line 1824 "plp5.tab.c"
+#line 366 "plp5.y"
+    { 
+        (yyval.rango).ini = (yyvsp[-2].num); 
+        (yyval.rango).fin = (yyvsp[0].num); 
+    }
+#line 1956 "plp5.tab.c"
     break;
 
   case 27: /* Range: NUMINT  */
-#line 199 "plp5.y"
-               { (yyval.rango).ini=0; (yyval.rango).fin=(yyvsp[0].num); }
-#line 1830 "plp5.tab.c"
+#line 371 "plp5.y"
+    { 
+        (yyval.rango).ini = 0; 
+        (yyval.rango).fin = (yyvsp[0].num); 
+    }
+#line 1965 "plp5.tab.c"
     break;
 
   case 28: /* $@4: %empty  */
-#line 202 "plp5.y"
-          { ts=new TablaSimbolos(ts); pilaDir.push(dirActual); }
-#line 1836 "plp5.tab.c"
+#line 378 "plp5.y"
+    { 
+        ts = new TablaSimbolos(ts); 
+        pilaDir.push(dirActual); 
+    }
+#line 1974 "plp5.tab.c"
     break;
 
   case 29: /* Blq: BLQ $@4 Cod FBLQ  */
-#line 202 "plp5.y"
-                                                                          {
-        dirActual=pilaDir.top(); pilaDir.pop(); ts=ts->getPadre();
+#line 383 "plp5.y"
+    {
+        dirActual = pilaDir.top(); 
+        pilaDir.pop(); 
+        ts = ts->getPadre();
+
         (yyval.code) = (yyvsp[-1].code);
     }
-#line 1845 "plp5.tab.c"
+#line 1986 "plp5.tab.c"
     break;
 
   case 30: /* Ip: ELSE I FI  */
-#line 208 "plp5.y"
-               { (yyval.code) = (yyvsp[-1].code); }
-#line 1851 "plp5.tab.c"
+#line 393 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[-1].code); 
+    }
+#line 1994 "plp5.tab.c"
     break;
 
   case 31: /* Ip: ELIF E I Ip  */
-#line 209 "plp5.y"
-                 {
+#line 397 "plp5.y"
+    {
         unsigned lnext = nuevaEtiqueta();
-        CodeAttr cond=*((yyvsp[-2].code)), body=*((yyvsp[-1].code)), tail=*((yyvsp[0].code)); CodeAttr *res=new CodeAttr();
-        string snext="L"+to_string(lnext); string send="L"+to_string(pilaIf.top());
-        res->cod=cond.cod+"mov "+to_string(cond.dir)+" A\n"+"jz "+snext+"\n"+body.cod+"jmp "+send+"\n"+snext+"\n"+tail.cod;
-        (yyval.code)=res;
-      }
-#line 1863 "plp5.tab.c"
-    break;
+        CodeAttr cond = *((yyvsp[-2].code)), body = *((yyvsp[-1].code)), tail = *((yyvsp[0].code)); 
+        CodeAttr *res = new CodeAttr();
+        string snext = label(lnext); 
+        string send = label(pilaIf.top());
 
-  case 32: /* Ip: FI  */
-#line 216 "plp5.y"
-        { (yyval.code) = new CodeAttr(); }
-#line 1869 "plp5.tab.c"
-    break;
+        res->cod = cond.cod + "mov " + to_string(cond.dir) + " A\n" + 
+                    "jz " + snext + "\n" + body.cod + 
+                    "jmp " + send + "\n" + 
+                    snext + "\n" + tail.cod;
 
-  case 33: /* IT: DOSP Type  */
-#line 219 "plp5.y"
-               { (yyval.tinfo) = (yyvsp[0].tinfo); }
-#line 1875 "plp5.tab.c"
-    break;
-
-  case 34: /* IT: %empty  */
-#line 220 "plp5.y"
-                 { (yyval.tinfo).tipo=0; (yyval.tinfo).tam=1; (yyval.tinfo).ndim=0; }
-#line 1881 "plp5.tab.c"
-    break;
-
-  case 35: /* E: E OPAS T  */
-#line 223 "plp5.y"
-             { (yyval.code) = new CodeAttr(binOp(*(yyvsp[-2].code),*(yyvsp[0].code),(yyvsp[-1].lexema))); }
-#line 1887 "plp5.tab.c"
-    break;
-
-  case 36: /* E: OPAS T  */
-#line 224 "plp5.y"
-           {
-        if(strcmp((yyvsp[-1].lexema),"-")==0){ CodeAttr zero=constInt(0); (yyval.code)= new CodeAttr(binOp(zero,*(yyvsp[0].code),"-")); }
-        else (yyval.code)=(yyvsp[0].code);
+        (yyval.code) = res;
     }
-#line 1896 "plp5.tab.c"
-    break;
-
-  case 37: /* E: T  */
-#line 228 "plp5.y"
-      { (yyval.code) = (yyvsp[0].code); }
-#line 1902 "plp5.tab.c"
-    break;
-
-  case 38: /* T: T OPMD F  */
-#line 231 "plp5.y"
-             { (yyval.code) = new CodeAttr(binOp(*(yyvsp[-2].code),*(yyvsp[0].code),(yyvsp[-1].lexema))); }
-#line 1908 "plp5.tab.c"
-    break;
-
-  case 39: /* T: F  */
-#line 232 "plp5.y"
-      { (yyval.code) = (yyvsp[0].code); }
-#line 1914 "plp5.tab.c"
-    break;
-
-  case 40: /* F: NUMINT  */
-#line 235 "plp5.y"
-           { (yyval.code) = new CodeAttr(constInt((yyvsp[0].num))); }
-#line 1920 "plp5.tab.c"
-    break;
-
-  case 41: /* F: NUMREAL  */
-#line 236 "plp5.y"
-            { (yyval.code) = new CodeAttr(constReal((yyvsp[0].real))); }
-#line 1926 "plp5.tab.c"
-    break;
-
-  case 42: /* F: PARI E PARD  */
-#line 237 "plp5.y"
-                { (yyval.code)=(yyvsp[-1].code); }
-#line 1932 "plp5.tab.c"
-    break;
-
-  case 43: /* F: Ref  */
-#line 238 "plp5.y"
-        { (yyval.code)= new CodeAttr(loadFromAddr(*(yyvsp[0].code),(yyvsp[0].code)->tipo)); }
-#line 1938 "plp5.tab.c"
-    break;
-
-  case 44: /* Ref: ID  */
-#line 241 "plp5.y"
-         {
-        Simbolo *s = ts->searchSymb((yyvsp[0].lexema));
-        CodeAttr *r=new CodeAttr(); r->cod=""; r->dir=0; r->tipo=0;
-        if(!s){
-            if(indiceDepth==0) errorSemantico(ERR_NODECL,(yylsp[0]).first_line,(yylsp[0]).first_column,(yyvsp[0].lexema));
-            r->cod="mov #0 A\n";
-        }else{
-            r->tipo=s->tipo;
-            r->cod="mov #"+to_string(s->dir)+" A\n";
-        }
-        (yyval.code)=r;
-    }
-#line 1955 "plp5.tab.c"
-    break;
-
-  case 45: /* $@5: %empty  */
-#line 253 "plp5.y"
-              {
-        SavedIndex tmp{enIndices,primeraIndice,corFila,corCol,comaFila,comaCol,idxExprs.size()};
-        idxStack.push_back(tmp);
-        enIndices=true; primeraIndice=true;
-        corFila=(yylsp[0]).first_line; corCol=(yylsp[0]).first_column;
-        comaFila=corFila; comaCol=corCol;
-        indiceDepth++;
-    }
-#line 1968 "plp5.tab.c"
-    break;
-
-  case 46: /* Ref: ID CORI $@5 LExpr CORD  */
-#line 260 "plp5.y"
-                 {
-        indiceDepth--;
-        Simbolo *s = ts->searchSymb((yyvsp[-4].lexema));
-        CodeAttr *r=new CodeAttr(); r->cod=""; r->dir=0; r->tipo=0;
-        if(!s){
-            errorSemantico(ERR_NODECL,(yylsp[-4]).first_line,(yylsp[-4]).first_column,(yyvsp[-4].lexema));
-        }else{
-            unsigned t=s->tipo; unsigned dims=0; std::vector<unsigned> dsz;
-            while(tt.tipos[t].clase==ARRAY){ dsz.push_back(tt.tipos[t].tamano); dims++; t=tt.tipos[t].tipoBase; }
-            if((yyvsp[-1].num)<dims) errorSemantico(ERR_FALTAN,(yylsp[0]).first_line,(yylsp[0]).first_column,"");
-            if((yyvsp[-1].num)>dims) errorSemantico(ERR_SOBRAN,comaFila,comaCol,"");
-            t=s->tipo; for(int i=0;i<(yyvsp[-1].num) && tt.tipos[t].clase==ARRAY;i++) t=tt.tipos[t].tipoBase;
-            r->tipo=t;
-            size_t pos=idxStack.back().pos; std::vector<CodeAttr*> exprs(idxExprs.begin()+pos,idxExprs.end()); idxExprs.resize(pos);
-            std::vector<unsigned> mult(dims); unsigned prod=1; for(int i=dims; i>0; --i){ mult[i-1]=prod; prod*=dsz[i-1]; }
-            CodeAttr off=constInt(s->dir);
-            for(size_t i=0;i<exprs.size();i++){
-                CodeAttr idx=convertType(*exprs[i],0);
-                if(mult[i]!=1){ CodeAttr m=constInt(mult[i]); idx=binOp(idx,m,"*"); }
-                off=binOp(off,idx,"+");
-            }
-            r->cod=off.cod+"mov "+to_string(off.dir)+" A\n";
-        }
-        SavedIndex rec=idxStack.back();
-        idxStack.pop_back();
-        enIndices=rec.en; primeraIndice=rec.prim; corFila=rec.corF; corCol=rec.corC; comaFila=rec.comaF; comaCol=rec.comaC;
-        (yyval.code)=r;
-    }
-#line 2001 "plp5.tab.c"
-    break;
-
-  case 47: /* LExpr: LExpr COMA E  */
-#line 290 "plp5.y"
-                     {
-          if(enIndices && (yyvsp[0].code)->tipo!=0) errorSemantico(ERR_INDICE_ENTERO,(yylsp[-1]).first_line,(yylsp[-1]).first_column,"");
-          (yyval.num)=(yyvsp[-2].num)+1;
-          primeraIndice=false;
-          comaFila=(yylsp[-1]).first_line; comaCol=(yylsp[-1]).first_column;
-          idxExprs.push_back((yyvsp[0].code));
-       }
 #line 2013 "plp5.tab.c"
     break;
 
+  case 32: /* Ip: FI  */
+#line 412 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(); 
+    }
+#line 2021 "plp5.tab.c"
+    break;
+
+  case 33: /* IT: DOSP Type  */
+#line 418 "plp5.y"
+    { 
+        (yyval.tinfo) = (yyvsp[0].tinfo); 
+    }
+#line 2029 "plp5.tab.c"
+    break;
+
+  case 34: /* IT: %empty  */
+#line 422 "plp5.y"
+    { 
+        (yyval.tinfo).tipo = 0; 
+        (yyval.tinfo).tam = 1; 
+        (yyval.tinfo).ndim = 0; 
+    }
+#line 2039 "plp5.tab.c"
+    break;
+
+  case 35: /* E: E OPAS T  */
+#line 430 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(binOp(*(yyvsp[-2].code), *(yyvsp[0].code), (yyvsp[-1].lexema))); 
+    }
+#line 2047 "plp5.tab.c"
+    break;
+
+  case 36: /* E: OPAS T  */
+#line 434 "plp5.y"
+    {
+        if (strcmp((yyvsp[-1].lexema), "-") == 0)
+        { 
+            CodeAttr zero = constInt(0); 
+            (yyval.code) = new CodeAttr(binOp(zero, *(yyvsp[0].code), "-")); 
+        }
+        else 
+        {
+            (yyval.code) = (yyvsp[0].code);
+        }
+    }
+#line 2063 "plp5.tab.c"
+    break;
+
+  case 37: /* E: T  */
+#line 446 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[0].code); 
+    }
+#line 2071 "plp5.tab.c"
+    break;
+
+  case 38: /* T: T OPMD F  */
+#line 452 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(binOp(*(yyvsp[-2].code), *(yyvsp[0].code), (yyvsp[-1].lexema))); 
+    }
+#line 2079 "plp5.tab.c"
+    break;
+
+  case 39: /* T: F  */
+#line 456 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[0].code); 
+    }
+#line 2087 "plp5.tab.c"
+    break;
+
+  case 40: /* F: NUMINT  */
+#line 462 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(constInt((yyvsp[0].num))); 
+    }
+#line 2095 "plp5.tab.c"
+    break;
+
+  case 41: /* F: NUMREAL  */
+#line 466 "plp5.y"
+    {   
+        (yyval.code) = new CodeAttr(constReal((yyvsp[0].real))); 
+    }
+#line 2103 "plp5.tab.c"
+    break;
+
+  case 42: /* F: PARI E PARD  */
+#line 470 "plp5.y"
+    { 
+        (yyval.code) = (yyvsp[-1].code); 
+    }
+#line 2111 "plp5.tab.c"
+    break;
+
+  case 43: /* F: Ref  */
+#line 474 "plp5.y"
+    { 
+        (yyval.code) = new CodeAttr(loadFromAddr(*(yyvsp[0].code), (yyvsp[0].code)->tipo)); 
+    }
+#line 2119 "plp5.tab.c"
+    break;
+
+  case 44: /* Ref: ID  */
+#line 480 "plp5.y"
+    {
+        Simbolo *s = ts->searchSymb((yyvsp[0].lexema));
+        CodeAttr *r = new CodeAttr(); 
+
+        r->cod = ""; 
+        r->dir = 0; 
+        r->tipo = 0;
+
+        if (!s)
+        {
+            if (indiceDepth == 0) errorSemantico(ERR_NODECL, (yylsp[0]).first_line, (yylsp[0]).first_column, (yyvsp[0].lexema));
+            
+            r->cod = "mov #0 A\n";
+        }
+        else
+        {
+            r->tipo = s->tipo;
+            r->cod = "mov #" + to_string(s->dir) + " A\n";
+        }
+
+        (yyval.code) = r;
+    }
+#line 2146 "plp5.tab.c"
+    break;
+
+  case 45: /* $@5: %empty  */
+#line 503 "plp5.y"
+    {
+        SavedIndex tmp {
+            enIndices,
+            primeraIndice,
+            corFila,
+            corCol,
+            comaFila,
+            comaCol,
+            idxExprs.size()
+        };
+
+        idxStack.push_back(tmp);
+        
+        enIndices = true; 
+        primeraIndice = true;
+        corFila = (yylsp[0]).first_line; 
+        corCol = (yylsp[0]).first_column;
+        comaFila = corFila; 
+        comaCol = corCol;
+        indiceDepth++;
+    }
+#line 2172 "plp5.tab.c"
+    break;
+
+  case 46: /* Ref: ID CORI $@5 LExpr CORD  */
+#line 525 "plp5.y"
+    {
+        indiceDepth--;
+        Simbolo *s = ts->searchSymb((yyvsp[-4].lexema));
+        CodeAttr *r = new CodeAttr(); 
+
+        r->cod = ""; 
+        r->dir = 0; 
+        r->tipo = 0;
+
+        if (!s)
+        {
+            errorSemantico(ERR_NODECL, (yylsp[-4]).first_line, (yylsp[-4]).first_column, (yyvsp[-4].lexema));
+        }
+        else
+        {
+            unsigned t = s->tipo; 
+            unsigned dims = 0; 
+            vector<unsigned> dsz;
+
+            while (tt.tipos[t].clase == ARRAY)
+            { 
+                dsz.push_back(tt.tipos[t].tamano); 
+                dims++; 
+
+                t = tt.tipos[t].tipoBase; 
+            }
+
+            if ((yyvsp[-1].num) < dims) errorSemantico(ERR_FALTAN, (yylsp[0]).first_line, (yylsp[0]).first_column, "");
+            if ((yyvsp[-1].num) > dims) errorSemantico(ERR_SOBRAN, comaFila, comaCol, "");
+
+            t = s->tipo; 
+            
+            for (int i = 0; i < (yyvsp[-1].num) && tt.tipos[t].clase == ARRAY; i++) 
+            {
+                t = tt.tipos[t].tipoBase;
+            }
+
+            r->tipo = t;
+
+            size_t pos = idxStack.back().pos; 
+            vector<CodeAttr*> exprs(idxExprs.begin() + pos, idxExprs.end()); 
+            idxExprs.resize(pos);
+            vector<unsigned> mult(dims); 
+            unsigned prod = 1; 
+            
+            for (int i = dims; i > 0; --i)
+            { 
+                mult[i-1] = prod; 
+                prod *= dsz[i-1]; 
+            }
+
+            CodeAttr off = constInt(s->dir);
+
+            for (size_t i = 0; i < exprs.size() ; i++)
+            {
+                CodeAttr idx = convertType(*exprs[i], 0);
+
+                if (mult[i] != 1)
+                { 
+                    CodeAttr m = constInt(mult[i]); 
+                    idx = binOp(idx, m, "*"); 
+                }
+
+                off = binOp(off, idx, "+");
+            }
+
+            r->cod = off.cod + "mov " + to_string(off.dir) + " A\n";
+        }
+
+        SavedIndex rec = idxStack.back();
+        idxStack.pop_back();
+
+        enIndices = rec.en; 
+        primeraIndice = rec.prim; 
+        corFila = rec.corF; 
+        corCol = rec.corC; 
+        comaFila = rec.comaF; 
+        comaCol = rec.comaC;
+
+        (yyval.code) = r;
+    }
+#line 2258 "plp5.tab.c"
+    break;
+
+  case 47: /* LExpr: LExpr COMA E  */
+#line 609 "plp5.y"
+    {
+        if (enIndices && (yyvsp[0].code)->tipo != 0) errorSemantico(ERR_INDICE_ENTERO, (yylsp[-1]).first_line, (yylsp[-1]).first_column, "");
+
+        (yyval.num) = (yyvsp[-2].num) + 1;
+
+        primeraIndice = false;
+        comaFila = (yylsp[-1]).first_line; 
+        comaCol = (yylsp[-1]).first_column;
+        idxExprs.push_back((yyvsp[0].code));
+    }
+#line 2273 "plp5.tab.c"
+    break;
+
   case 48: /* LExpr: E  */
-#line 297 "plp5.y"
-          {
-          if(enIndices && (yyvsp[0].code)->tipo!=0){
-              if(primeraIndice) errorSemantico(ERR_INDICE_ENTERO,corFila,corCol,"");
-              else errorSemantico(ERR_INDICE_ENTERO,(yylsp[0]).first_line,(yylsp[0]).first_column,"");
-          }
-          (yyval.num)=1;
-          primeraIndice=false;
-          idxExprs.push_back((yyvsp[0].code));
-       }
-#line 2027 "plp5.tab.c"
+#line 620 "plp5.y"
+    {
+        if (enIndices && (yyvsp[0].code)->tipo != 0)
+        {
+            if      (primeraIndice) errorSemantico(ERR_INDICE_ENTERO, corFila, corCol, "");
+            else                    errorSemantico(ERR_INDICE_ENTERO, (yylsp[0]).first_line, (yylsp[0]).first_column, "");
+        }
+
+        (yyval.num) = 1;
+
+        primeraIndice = false;
+        idxExprs.push_back((yyvsp[0].code));
+    }
+#line 2290 "plp5.tab.c"
     break;
 
 
-#line 2031 "plp5.tab.c"
+#line 2294 "plp5.tab.c"
 
       default: break;
     }
@@ -2256,58 +2519,77 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 307 "plp5.y"
+#line 634 "plp5.y"
 
 
 extern FILE *yyin;
 
-int main(int argc,char *argv[]){
+// Punto de entrada del compilador. Abre el fichero fuente si se
+// proporciona como argumento y lanza el análisis sintáctico. 
+// Al finalizar se imprime el código generado seguido de la instrucción 'halt'.
+int main (int argc, char *argv[])
+{
     ts = new TablaSimbolos(nullptr);
-    if(argc>1){
-        yyin=fopen(argv[1],"r");
-        if(!yyin){
-            fprintf(stderr,"No puedo abrir %s\n",argv[1]);
+
+    if (argc > 1) 
+    {
+        yyin = fopen(argv[1], "r");
+
+        if (!yyin)
+        {
+            fprintf(stderr, "No puedo abrir %s\n", argv[1]);
             return 1;
         }
     }
-    commentDepth=0;
-    col=1;
+    
+    commentDepth = 0;
+    col = 1;
+
     yyparse();
-    printf("%s",codigoFinal.c_str());
+    printf("%s", codigoFinal.c_str());
     printf("halt\n");
+
     return 0;
 }
 
-void yyerror(const char *s){
-    msgError(ERRSINT,yylineno,0,yytext);
+// Informa de un error sintáctico a partir de la localización actual 
+void yyerror (const char *s)
+{
+    msgError(ERRSINT, yylineno, 0, yytext);
 }
 
-void errorSemantico(int nerror,int fila,int columna,const char *s)
+// Muestra un mensaje de error semántico y aborta la compilación 
+void errorSemantico (int nerror, int fila, int columna, const char *s)
 {
-    fprintf(stderr,"Error semantico (%d,%d): ",fila,columna);
-    switch (nerror) {
-        case ERR_YADECL: fprintf(stderr,"variable '%s' ya declarada\n",s); break;
-        case ERR_NODECL: fprintf(stderr,"variable '%s' no declarada\n",s); break;
-        case ERR_NOCABE:fprintf(stderr,"la variable '%s' ya no cabe en memoria\n",s); break;
-        case ERR_IFWHILE:fprintf(stderr,"la expresion del '%s' debe ser de tipo entero",s); break;
-        case ERR_LOOP:fprintf(stderr,"la variable del '%s' debe ser de tipo entero",s); break;
-        case ERR_DIM: fprintf(stderr,"la dimension debe ser mayor que 0\n"); break;
-        case ERR_FALTAN: fprintf(stderr,"faltan indices\n"); break;
-        case ERR_SOBRAN: fprintf(stderr,"sobran indices\n"); break;
-        case ERR_INDICE_ENTERO: fprintf(stderr,"el indice de un array debe ser de tipo entero\n"); break;
-        case ERR_ASIG: fprintf(stderr,"tipos incompatibles en la asignacion\n"); break;
-        case ERR_MAXTEMP:fprintf(stderr,"no hay espacio para variables temporales\n"); break;
+    fprintf (stderr, "Error semantico (%d,%d): ", fila, columna);
+
+    switch (nerror) 
+    {
+        case ERR_YADECL:        fprintf(stderr, "variable '%s' ya declarada\n", s);                     break;
+        case ERR_NODECL:        fprintf(stderr, "variable '%s' no declarada\n", s);                     break;
+        case ERR_NOCABE:        fprintf(stderr, "la variable '%s' ya no cabe en memoria\n", s);         break;
+        case ERR_IFWHILE:       fprintf(stderr, "la expresion del '%s' debe ser de tipo entero", s);    break;
+        case ERR_LOOP:          fprintf(stderr, "la variable del '%s' debe ser de tipo entero", s);     break;
+        case ERR_DIM:           fprintf(stderr, "la dimension debe ser mayor que 0\n");                 break;
+        case ERR_FALTAN:        fprintf(stderr, "faltan indices\n");                                    break;
+        case ERR_SOBRAN:        fprintf(stderr, "sobran indices\n");                                    break;
+        case ERR_INDICE_ENTERO: fprintf(stderr, "el indice de un array debe ser de tipo entero\n");     break;
+        case ERR_ASIG:          fprintf(stderr, "tipos incompatibles en la asignacion\n");              break;
+        case ERR_MAXTEMP:       fprintf(stderr, "no hay espacio para variables temporales\n");          break;
     }
+
     exit(-1);
 }
 
-void msgError(int nerror,int nlin,int ncol,const char *s)
+// Imprime los distintos mensajes de error léxico y sintáctico 
+void msgError (int nerror, int nlin, int ncol, const char *s)
 {
-     switch (nerror) {
-         case ERRLEXICO: fprintf(stderr,"Error lexico (%d,%d): caracter '%s' incorrecto\n",nlin,ncol,s); break;
-         case ERRSINT: fprintf(stderr,"Error sintactico (%d,%d): en '%s'\n",nlin,ncol,s); break;
-         case ERREOF: fprintf(stderr,"Error sintactico: fin de fichero inesperado\n"); break;
-         case ERRLEXEOF: fprintf(stderr,"Error lexico: fin de fichero inesperado\n"); break;
-     }
-     exit(1);
+    switch (nerror) 
+    {
+        case ERRLEXICO: fprintf(stderr, "Error lexico (%d,%d): caracter '%s' incorrecto\n", nlin, ncol, s); break;
+        case ERRSINT:   fprintf(stderr, "Error sintactico (%d,%d): en '%s'\n", nlin, ncol, s);              break;
+        case ERREOF:    fprintf(stderr, "Error sintactico: fin de fichero inesperado\n");                   break;
+        case ERRLEXEOF: fprintf(stderr, "Error lexico: fin de fichero inesperado\n");                       break;
+    }
+    exit(1);
 }

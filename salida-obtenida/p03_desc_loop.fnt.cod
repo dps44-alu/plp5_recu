@@ -1,0 +1,18 @@
+mov #3 A
+mov A 0
+L0
+mov 0 A
+subi #-1
+jz L1
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wri A
+wrl
+mov 0 A
+subi #1
+mov A 0
+jmp L0
+L1
+halt

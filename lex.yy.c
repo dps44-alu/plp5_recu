@@ -531,20 +531,24 @@ char *yytext;
 #line 2 "plp5.l"
 #include "plp5.tab.h"
 #include "comun.h"
+
 #include <string.h>
-#include <stack>
-int col = 1;                /* columna actual */
-int commentDepth = 0;
+
+int col = 1;            // Columna actual de la entrada 
+int commentDepth = 0;   // nivel de anidamiento de comentarios 
+
+// Actualiza la información de localización de cada 
+// token utilizando las variables de Flex
 #define YY_USER_ACTION \
     yylloc.first_line = yylineno; \
     yylloc.first_column = col; \
     yylloc.last_line = yylineno; \
     yylloc.last_column = col + yyleng - 1; \
     col += yyleng;
-#line 545 "lex.yy.c"
+#line 549 "lex.yy.c"
 #define YY_NO_INPUT 1
 
-#line 548 "lex.yy.c"
+#line 552 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -760,9 +764,10 @@ YY_DECL
 		}
 
 	{
-#line 25 "plp5.l"
+#line 30 "plp5.l"
 
-#line 766 "lex.yy.c"
+
+#line 771 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -831,244 +836,245 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 26 "plp5.l"
-{
-    if(commentDepth==0) BEGIN(COMMENT);
-    commentDepth++; }
+#line 32 "plp5.l"
+{                                              // Inicio de comentario
+        if (commentDepth == 0) BEGIN(COMMENT);
+        commentDepth++; 
+    }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 29 "plp5.l"
-{ commentDepth++; }
+#line 36 "plp5.l"
+{ commentDepth++; }                   // Comentario anidado 
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 30 "plp5.l"
-{
-    if(--commentDepth==0) BEGIN(INITIAL);
-}
+#line 37 "plp5.l"
+{                                     // Fin de comentario 
+        if(--commentDepth == 0) BEGIN(INITIAL);
+    }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 33 "plp5.l"
+#line 40 "plp5.l"
 { yylineno++; col=1; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 34 "plp5.l"
+#line 41 "plp5.l"
 { yylineno++; col=1; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 35 "plp5.l"
-{ col=1; }
+#line 42 "plp5.l"
+{ col = 1; }
 	YY_BREAK
 case YY_STATE_EOF(COMMENT):
-#line 36 "plp5.l"
-{
-    msgError(ERRLEXEOF,yylineno,col,"EOF");
-}
+#line 43 "plp5.l"
+{                                  // EOF sin cerrar comentario 
+        msgError(ERRLEXEOF, yylineno, col, "EOF");
+    }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 39 "plp5.l"
+#line 46 "plp5.l"
 { }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 41 "plp5.l"
-{ /* skip blanks, column updated in YY_USER_ACTION */ }
+#line 48 "plp5.l"
+{ /* Ignorar espacios, columna actualizada en YY_USER_ACTION */ }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 42 "plp5.l"
+#line 49 "plp5.l"
 { yylineno++; col=1; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 43 "plp5.l"
+#line 50 "plp5.l"
 { yylineno++; col=1; }
 	YY_BREAK
 case 11:
 /* rule 11 can match eol */
 YY_RULE_SETUP
-#line 44 "plp5.l"
+#line 51 "plp5.l"
 { col=1; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 46 "plp5.l"
-{ return FN; }
+#line 53 "plp5.l"
+{ return FN;      }                                     // Palabras clave 
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 47 "plp5.l"
-{ return ENDFN; }
+#line 54 "plp5.l"
+{ return ENDFN;   }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 48 "plp5.l"
-{ return INTKW; }
+#line 55 "plp5.l"
+{ return INTKW;   }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 49 "plp5.l"
-{ return REALKW; }
+#line 56 "plp5.l"
+{ return REALKW;  }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 50 "plp5.l"
+#line 57 "plp5.l"
 { return ARRAYKW; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 51 "plp5.l"
-{ return LET; }
+#line 58 "plp5.l"
+{ return LET;     }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 52 "plp5.l"
-{ return VAR; }
+#line 59 "plp5.l"
+{ return VAR;     }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 53 "plp5.l"
-{ return IF; }
+#line 60 "plp5.l"
+{ return IF;      }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 54 "plp5.l"
-{ return ELSE; }
+#line 61 "plp5.l"
+{ return ELSE;    }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 55 "plp5.l"
-{ return ELIF; }
+#line 62 "plp5.l"
+{ return ELIF;    }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 56 "plp5.l"
-{ return FI; }
+#line 63 "plp5.l"
+{ return FI;      }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 57 "plp5.l"
-{ return WHILE; }
+#line 64 "plp5.l"
+{ return WHILE;   }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 58 "plp5.l"
-{ return LOOP; }
+#line 65 "plp5.l"
+{ return LOOP;    }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 59 "plp5.l"
-{ return RANGE; }
+#line 66 "plp5.l"
+{ return RANGE;   }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 60 "plp5.l"
+#line 67 "plp5.l"
 { return ENDLOOP; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 61 "plp5.l"
-{ return BLQ; }
+#line 68 "plp5.l"
+{ return BLQ;     }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 62 "plp5.l"
-{ return FBLQ; }
+#line 69 "plp5.l"
+{ return FBLQ;    }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 63 "plp5.l"
-{ return READ; }
+#line 70 "plp5.l"
+{ return READ;    }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 64 "plp5.l"
-{ return PRINT; }
+#line 71 "plp5.l"
+{ return PRINT;   }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 66 "plp5.l"
-{ yylval.lexema=strdup(yytext); return OPAS; }
+#line 73 "plp5.l"
+{ yylval.lexema = strdup(yytext); return OPAS; }        // Operadores
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 67 "plp5.l"
-{ yylval.lexema=strdup(yytext); return OPMD; }
+#line 74 "plp5.l"
+{ yylval.lexema = strdup(yytext); return OPMD; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 68 "plp5.l"
+#line 75 "plp5.l"
 { return PARI; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 69 "plp5.l"
+#line 76 "plp5.l"
 { return PARD; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 70 "plp5.l"
+#line 77 "plp5.l"
 { return CORI; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 71 "plp5.l"
+#line 78 "plp5.l"
 { return CORD; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 72 "plp5.l"
+#line 79 "plp5.l"
 { return COMA; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 73 "plp5.l"
+#line 80 "plp5.l"
 { return DOSP; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 74 "plp5.l"
-{ return PYC; }
+#line 81 "plp5.l"
+{ return PYC;  }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 75 "plp5.l"
+#line 82 "plp5.l"
 { return ASIG; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 77 "plp5.l"
-{ yylval.real=atof(yytext); return NUMREAL; }
+#line 84 "plp5.l"
+{ yylval.real   = atof(yytext);     return NUMREAL; }   // Literales
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 78 "plp5.l"
-{ yylval.num=atoi(yytext); return NUMINT; }
+#line 85 "plp5.l"
+{ yylval.num    = atoi(yytext);     return NUMINT;  }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 79 "plp5.l"
-{ yylval.lexema=strdup(yytext); return ID; }
+#line 86 "plp5.l"
+{ yylval.lexema = strdup(yytext);   return ID;      }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 81 "plp5.l"
-{ msgError(ERRLEXICO,yylineno,col,yytext); }
+#line 88 "plp5.l"
+{ msgError(ERRLEXICO,yylineno,col,yytext); }            // Cualquier otro 
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 82 "plp5.l"
+#line 90 "plp5.l"
 ECHO;
 	YY_BREAK
-#line 1072 "lex.yy.c"
+#line 1078 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2044,7 +2050,9 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 82 "plp5.l"
+#line 90 "plp5.l"
 
+
+// Solicita a Flex que finalice al alcanzar EOF 
 int yywrap(){ return 1; }
 

@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 54 "plp5.y"
+#line 79 "plp5.y"
 
 #include "comun.h"
 
@@ -100,7 +100,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 61 "plp5.y"
+#line 86 "plp5.y"
 
     char* lexema;
     int num;
@@ -108,9 +108,12 @@ union YYSTYPE
     unsigned tipo;
     TypeInfo tinfo;
     CodeAttr* code;
-    struct {int ini; int fin;} rango;
+    struct {
+        int ini; 
+        int fin;
+    } rango;
 
-#line 114 "plp5.tab.h"
+#line 117 "plp5.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
