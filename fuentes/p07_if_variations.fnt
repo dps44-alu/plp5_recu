@@ -1,0 +1,21 @@
+fn main()
+  var x; var y;
+  let x = 1; /* true */
+  let y = 0; /* false */
+
+  print 100;
+  if x print 1 fi; /* if sin else/elif */
+  print 200;
+
+  if y print 0 /* esta no se ejecuta */
+  elif x print 2 /* esta se ejecuta */
+  fi;
+  print 300;
+
+  if y print 0          /* no se ejecuta */
+  elif y print 0        /* no se ejecuta */
+  elif x print 3        /* se ejecuta */
+  elif x print 0        /* no se ejecuta porque una anterior fue verdadera */
+  fi;
+  print 400;
+endfn

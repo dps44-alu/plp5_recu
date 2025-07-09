@@ -1,0 +1,3 @@
+fn main()
+  var x : array real 16001; /* Error semantico (2,7): la variable 'x' ya no cabe en memoria */
+endfn
