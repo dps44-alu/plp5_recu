@@ -158,10 +158,14 @@ I : Blq { $$ = $1; }
         LoopInfo info=loopStack.back(); loopStack.pop_back();
         CodeAttr body=*($6); CodeAttr *res=new CodeAttr();
         string lc="L"+to_string(info.lc), le="L"+to_string(info.le);
+        int step = (info.ini <= info.fin) ? 1 : -1;
+        int limite = (step==1)? info.fin+1 : info.fin-1;
         res->cod="mov #"+to_string(info.ini)+" A\nmov A "+to_string(info.sym->dir)+"\n";
-        res->cod+=lc+"\nmov "+to_string(info.sym->dir)+" A\nsubi #"+to_string(info.fin+1)+"\njz "+le+"\n";
+        res->cod+=lc+"\nmov "+to_string(info.sym->dir)+" A\nsubi #"+to_string(limite)+"\njz "+le+"\n";
         res->cod+=body.cod;
-        res->cod+="mov "+to_string(info.sym->dir)+" A\naddi #1\nmov A "+to_string(info.sym->dir)+"\n";
+        res->cod+="mov "+to_string(info.sym->dir)+" A\n";
+        if(step==1) res->cod+="addi #1\n"; else res->cod+="subi #1\n";
+        res->cod+="mov A "+to_string(info.sym->dir)+"\n";
         res->cod+="jmp "+lc+"\n"+le+"\n";
         $$=res;
       }
