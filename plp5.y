@@ -1,4 +1,10 @@
 %{
+/*
+ * Fichero Bison que implementa el analizador sintáctico y la
+ * generación de código m2r para la práctica. Utiliza una tabla
+ * de símbolos y una tabla de tipos para comprobar las restricciones
+ * semánticas del lenguaje.
+ */
 #include <string>
 #include <cstring>
 #include "comun.h"
@@ -8,36 +14,39 @@
 #include <vector>
 using namespace std;
 
-TablaSimbolos *ts = nullptr;
-TablaTipos tt;
-unsigned dirActual = 0; // direccion libre para variables
-std::stack<unsigned> pilaDir;
-unsigned baseTipo; // para construir tipos de arrays
-int ctemp = 16000;
-int etiqueta = 0;
-bool enIndices=false;
-bool primeraIndice=true;
-int corFila=0, corCol=0;
-int comaFila=0, comaCol=0;
-int indiceDepth=0;
-struct SavedIndex { bool en; bool prim; int corF; int corC; int comaF; int comaC; size_t pos; };
-std::vector<SavedIndex> idxStack;
-std::vector<CodeAttr*> idxExprs;
-std::string codigoFinal;
-std::stack<unsigned> pilaIf;
+TablaSimbolos *ts = nullptr;        /* tabla de símbolos actual */
+TablaTipos tt;                      /* tabla global de tipos */
+unsigned dirActual = 0;             /* siguiente dirección libre para variables */
+std::stack<unsigned> pilaDir;       /* para restaurar la dirección al salir de un bloque */
+unsigned baseTipo;                  /* tipo base al construir arrays */
+int ctemp = 16000;                  /* contador de temporales */
+int etiqueta = 0;                   /* contador de etiquetas */
+bool enIndices=false;               /* estamos procesando índices de un array */
+bool primeraIndice=true;            /* se refiere al primer índice */
+int corFila=0, corCol=0;            /* posición del '[' inicial */
+int comaFila=0, comaCol=0;          /* última coma encontrada */
+int indiceDepth=0;                  /* nivel de anidamiento de índices */
+struct SavedIndex {                 /* registro para restaurar flags de índices */
+    bool en; bool prim; int corF; int corC; int comaF; int comaC; size_t pos; };
+std::vector<SavedIndex> idxStack;   /* pila de estados de índices */
+std::vector<CodeAttr*> idxExprs;    /* expresiones de cada índice */
+std::string codigoFinal;            /* código generado por el programa */
+std::stack<unsigned> pilaIf;        /* etiquetas pendientes en if/else */
 std::stack<unsigned> pilaElse;
 struct LoopInfo { Simbolo* sym; int ini; int fin; unsigned lc; unsigned le; };
-std::vector<LoopInfo> loopStack;
+std::vector<LoopInfo> loopStack;    /* información sobre bucles anidados */
 extern int col;
 extern int commentDepth;
 
+/* Reserva una nueva posición de temporal. */
 int nuevaTemp(void){
-    if(ctemp>16383){
+    if(ctemp>16383){                       /* sin espacio para temporales */
         errorSemantico(ERR_MAXTEMP,0,0,"");
     }
-    return ctemp++;
+    return ctemp++;                         /* devuelve la posición y avanza */
 }
 
+/* Proporciona el número de una nueva etiqueta */
 int nuevaEtiqueta(){
     return etiqueta++;
 }
@@ -82,9 +91,12 @@ extern char *yytext;
 %type <num> LExpr Mark
 
 %%
+/* ----- Reglas gramaticales y acciones semánticas ----- */
+/* Programa completo: al finalizar guardamos el código final */
 S : Fun { codigoFinal = $1->cod; }
   ;
 
+/* Declaración de la única función del lenguaje */
 Fun : FN ID PARI PARD Cod ENDFN { $$ = $5; }
     ;
 
@@ -92,10 +104,12 @@ SType : INTKW { $$ = 0; }
       | REALKW { $$ = 1; }
       ;
 
+/* Tipos básicos o construidos mediante 'array' */
 Type : SType { $$.tipo=$1; $$.tam=1; $$.ndim=0; }
      | ARRAYKW SType { baseTipo=$2==0?0:1; } Dim { $$.tipo=$4.tipo; $$.tam=$4.tam; $$.ndim=$4.ndim; }
      ;
 
+/* Lista de dimensiones de un array */
 Dim : NUMINT COMA Dim {
         if($1<=0) errorSemantico(ERR_DIM,@1.first_line,@1.first_column,"");
         unsigned t=tt.nuevoTipoArray($1,$3.tipo); $$.tipo=t; $$.tam=$1*$3.tam; $$.ndim=$3.ndim+1;
@@ -106,16 +120,20 @@ Dim : NUMINT COMA Dim {
     }
     ;
 
+/* Secuencia de instrucciones separadas por ';' */
 Cod : Cod PYC I { $$ = new CodeAttr( mergeCode(*$1,*$3) ); }
     | Cod PYC { $$ = $1; }
     | I { $$ = $1; }
     ;
 
+/* Instrucción con salvado y restauración del contador de temporales */
 I : Mark Instr { ctemp=$1; $$=$2; }
     ;
 
+/* Punto de guarda para el valor actual de 'ctemp' */
 Mark : /* empty */ { $$ = ctemp; }
 
+/* Implementación de cada tipo de instrucción */
 Instr : Blq { $$ = $1; }
    | LET Ref ASIG E {
         if(!(( $2->tipo==1 && $4->tipo==0) || $2->tipo==$4->tipo ))
@@ -306,6 +324,12 @@ LExpr : LExpr COMA E {
 
 extern FILE *yyin;
 
+/*
+ * Punto de entrada del compilador. Abre el fichero fuente si se
+ * proporciona como argumento y lanza el análisis sintáctico. Al
+ * finalizar se imprime el código generado seguido de la instrucción
+ * 'halt'.
+ */
 int main(int argc,char *argv[]){
     ts = new TablaSimbolos(nullptr);
     if(argc>1){
@@ -323,10 +347,12 @@ int main(int argc,char *argv[]){
     return 0;
 }
 
+/* Informa de un error sintáctico a partir de la localización actual */
 void yyerror(const char *s){
     msgError(ERRSINT,yylineno,0,yytext);
 }
 
+/* Muestra un mensaje de error semántico y aborta la compilación */
 void errorSemantico(int nerror,int fila,int columna,const char *s)
 {
     fprintf(stderr,"Error semantico (%d,%d): ",fila,columna);
@@ -346,6 +372,7 @@ void errorSemantico(int nerror,int fila,int columna,const char *s)
     exit(-1);
 }
 
+/* Imprime los distintos mensajes de error léxico y sintáctico */
 void msgError(int nerror,int nlin,int ncol,const char *s)
 {
      switch (nerror) {
