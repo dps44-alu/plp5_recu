@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stack>
 int col = 1;                /* columna actual */
-static int commentDepth = 0;
+int commentDepth = 0;
 #define YY_USER_ACTION \
     yylloc.first_line = yylineno; \
     yylloc.first_column = col; \
@@ -30,14 +30,18 @@ NUMINT {DIG}+
 <COMMENT>"*/" {
     if(--commentDepth==0) BEGIN(INITIAL);
 }
-<COMMENT>\n { col=1; }
+<COMMENT>\r\n { yylineno++; col=1; }
+<COMMENT>\r    { yylineno++; col=1; }
+<COMMENT>\n    { col=1; }
 <COMMENT><<EOF>> {
     msgError(ERRLEXEOF,yylineno,col,"EOF");
 }
 <COMMENT>. { }
 
-[ \t\r]+ { /* skip blanks, column updated in YY_USER_ACTION */ }
-\n { col=1; }
+[ \t]+ { /* skip blanks, column updated in YY_USER_ACTION */ }
+\r\n { yylineno++; col=1; }
+\r   { yylineno++; col=1; }
+\n   { col=1; }
 
 "fn"        { return FN; }
 "endfn"     { return ENDFN; }

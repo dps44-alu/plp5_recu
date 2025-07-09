@@ -107,5 +107,6 @@ extern int corCol;
 extern int comaFila;
 extern int comaCol;
 extern int indiceDepth;
+extern int commentDepth;
 
 #endif

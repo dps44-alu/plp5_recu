@@ -30,6 +30,8 @@ std::stack<unsigned> pilaIf;
 std::stack<unsigned> pilaElse;
 struct LoopInfo { Simbolo* sym; int ini; int fin; unsigned lc; unsigned le; };
 std::vector<LoopInfo> loopStack;
+extern int col;
+extern int commentDepth;
 
 int nuevaTemp(void){
     if(ctemp>16383){
@@ -315,6 +317,8 @@ int main(int argc,char *argv[]){
             return 1;
         }
     }
+    commentDepth=0;
+    col=1;
     yyparse();
     printf("%s",codigoFinal.c_str());
     printf("halt\n");
