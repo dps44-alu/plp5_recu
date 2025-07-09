@@ -1,0 +1,6 @@
+fn main()
+  var arr : array int 5;
+  var x : int;
+  let arr[0] = 1; /* Para asegurar que 'arr' es tratado como array */
+  let x = arr; /* Error semantico (5,7): tipos incompatibles en la asignacion */
+endfn

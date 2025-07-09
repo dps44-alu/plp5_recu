@@ -1,4 +1,3 @@
-
 /*
  * Fichero compartido por el analizador léxico y el sintáctico.
  * Contiene definiciones de constantes, estructuras auxiliares y
