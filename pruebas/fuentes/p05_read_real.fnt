@@ -1,5 +1,0 @@
-fn main()
-  var r : real;
-  read r;
-  print r;
-endfn

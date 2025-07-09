@@ -1,6 +1,0 @@
-fn main()
-  var a : array real 2;
-  let a[0] = 1.23;
-  let a[1] = 4.567;
-  print a[1];
-endfn

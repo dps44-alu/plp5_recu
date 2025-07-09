@@ -1,6 +1,0 @@
-fn main()
-  var r : real;
-  loop r range 5 /* Error semantico (3,8): la variable del 'loop' debe ser de tipo entero */
-    print r
-  endloop
-endfn

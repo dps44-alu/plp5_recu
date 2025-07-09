@@ -1,3 +1,4 @@
+
 #include "TablaTipos.h"
 
 TablaTipos::TablaTipos()

@@ -1,8 +1,0 @@
-mov #0 A
-mov $1.23 A
-mov #1 A
-mov $4.567 A
-mov #1 A
-mov A 16000
-wrr 16000
-wrl

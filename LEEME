@@ -11,12 +11,10 @@ práctica 5 con algunos programas de prueba.
   fuentes                -  directorio con algunos programas fuente (.fnt)
   datos-entrada          -  directorio con ficheros de entrada para algunos programas
   salida-esperada        -  directorio con la salida esperada de cada programa fuente
- salida-obtenida        -  directorio en el que se guardará la salida de la práctica
+  salida-obtenida        -  directorio en el que se guardará la salida de la práctica
                            para cada programa fuente
- run_autocorrector.sh   -  pequeño script de ayuda que crea el directorio
-                           anterior antes de lanzar el autocorrector
   autocorrector-plp5.sh  -  shell script para probar la práctica con los
-                           programas fuente del directorio "fuentes".
+                           programas fuente del directorio "fuentes". 
                            Al ser un fichero de texto, se puede leer y modificar
                            para añadir más programas de prueba (ver los comentarios
                            en el script). Este script prueba tanto programas
@@ -28,13 +26,9 @@ práctica 5 con algunos programas de prueba.
                            compilado por el script de corrección.
 
 
-Para comprobar tu práctica con este autocorrector debes poner los ficheros
-comun.h, plp5.l y plp5.y y demás fuentes, incluyendo el Makefile,  en el directorio
+ Para comprobar tu práctica con este autocorrector debes poner los ficheros
+comun.h, plp5.l y plp5.y y demás fuentes, incluyendo el Makefile,  en el directorio 
 en el que está este fichero LEEME.
-Antes de compilar es necesario contar con las herramientas flex, bison y
-poppler-utils instaladas en el sistema (en Debian/Ubuntu se pueden instalar con
-"sudo apt-get install flex bison poppler-utils"). Tras instalar estas
-dependencias basta con ejecutar "make" y luego el script de autocorrección.
 
 
 NOTA IMPORTANTE: Los programas fuente publicados son solamente una pequeña

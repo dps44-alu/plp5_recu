@@ -1,3 +1,0 @@
-mov 0 A
-mov #789 A
-mov A 0

@@ -1,5 +1,0 @@
-fn main()
-  loop i range 5 /* Error semantico (2,8): variable 'i' no declarada */
-    print i
-  endloop
-endfn

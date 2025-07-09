@@ -1,5 +1,0 @@
-mov 1 A
-mov $10.5 A
-mov A 1
-mov 0 A
-mov 1 A

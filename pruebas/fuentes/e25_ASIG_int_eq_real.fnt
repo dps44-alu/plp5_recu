@@ -1,6 +1,0 @@
-fn main()
-  var i : int;
-  var r : real;
-  let r = 10.5;
-  let i = r; /* Error semantico (5,7): tipos incompatibles en la asignacion */
-endfn

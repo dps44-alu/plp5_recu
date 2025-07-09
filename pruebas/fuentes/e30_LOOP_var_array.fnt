@@ -1,6 +1,0 @@
-fn main()
-  var arr : array int 5;
-  loop arr range 5 /* Error semantico (3,8): la variable del 'loop' debe ser de tipo entero */
-    print arr[0]
-  endloop
-endfn

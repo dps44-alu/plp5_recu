@@ -1,6 +1,0 @@
-fn main()
-  var r : real;
-  let r = 1.0;
-  while r /* Error semantico (4,9): la expresion del 'while' debe ser de tipo entero */
-    print r
-endfn

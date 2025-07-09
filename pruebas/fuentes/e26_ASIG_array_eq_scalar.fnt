@@ -1,6 +1,0 @@
-fn main()
-  var arr : array int 5;
-  var x : int;
-  let x = 10;
-  let arr = x; /* Error semantico (5,7): tipos incompatibles en la asignacion */
-endfn

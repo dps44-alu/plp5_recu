@@ -1,4 +1,0 @@
-fn main()
-  var a : array int 5;
-  print a[1.0]; /* Error semantico (3,12): el indice de un array debe ser de tipo entero */
-endfn

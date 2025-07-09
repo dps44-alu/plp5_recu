@@ -1,4 +1,0 @@
-mov 0 A
-mov #5 A
-mov A 0
-mov #0 A
