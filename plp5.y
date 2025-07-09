@@ -1,7 +1,5 @@
 %{
 #include <string>
-#include <iostream>
-#include <sstream>
 #include <cstring>
 #include "comun.h"
 #include "TablaSimbolos.h"
@@ -147,7 +145,7 @@ Instr : Blq { $$ = $1; }
    | WHILE E I {
         if($2->tipo!=0) errorSemantico(ERR_IFWHILE,@1.first_line,@1.first_column,"while");
         unsigned L1=nuevaEtiqueta(), L2=nuevaEtiqueta();
-        string lab1="L"+to_string(L1), lab2="L"+to_string(L2);
+        string lab1=label(L1), lab2=label(L2);
         CodeAttr cond=*($2); CodeAttr body=*($3); CodeAttr *res=new CodeAttr();
         res->cod=lab1+"\n"+cond.cod+"mov "+to_string(cond.dir)+" A\n"+
                  "jz "+lab2+"\n"+body.cod+"jmp "+lab1+"\n"+lab2+"\n";
@@ -164,7 +162,7 @@ Instr : Blq { $$ = $1; }
       } I ENDLOOP {
         LoopInfo info=loopStack.back(); loopStack.pop_back();
         CodeAttr body=*($6); CodeAttr *res=new CodeAttr();
-        string lc="L"+to_string(info.lc), le="L"+to_string(info.le);
+        string lc=label(info.lc), le=label(info.le);
         int step = (info.ini <= info.fin) ? 1 : -1;
         int limite = (step==1)? info.fin+1 : info.fin-1;
         res->cod="mov #"+to_string(info.ini)+" A\nmov A "+to_string(info.sym->dir)+"\n";
@@ -186,7 +184,7 @@ Instr : Blq { $$ = $1; }
         unsigned lend = pilaIf.top(); pilaIf.pop();
         unsigned lelse = pilaElse.top(); pilaElse.pop();
         CodeAttr cond=*($2), thenCode=*($4), elsePart=*($5); CodeAttr *res=new CodeAttr();
-        string sElse="L"+to_string(lelse), sEnd="L"+to_string(lend);
+        string sElse=label(lelse), sEnd=label(lend);
         res->cod=cond.cod+"mov "+to_string(cond.dir)+" A\n"+
                 "jz "+sElse+"\n"+thenCode.cod+
                 "jmp "+sEnd+"\n"+sElse+"\n"+
@@ -209,7 +207,7 @@ Ip : ELSE I FI { $$ = $2; }
    | ELIF E I Ip {
         unsigned lnext = nuevaEtiqueta();
         CodeAttr cond=*($2), body=*($3), tail=*($4); CodeAttr *res=new CodeAttr();
-        string snext="L"+to_string(lnext); string send="L"+to_string(pilaIf.top());
+        string snext=label(lnext); string send=label(pilaIf.top());
         res->cod=cond.cod+"mov "+to_string(cond.dir)+" A\n"+"jz "+snext+"\n"+body.cod+"jmp "+send+"\n"+snext+"\n"+tail.cod;
         $$=res;
       }

@@ -2,7 +2,6 @@
 #include "plp5.tab.h"
 #include "comun.h"
 #include <string.h>
-#include <stack>
 int col = 1;                /* columna actual */
 int commentDepth = 0;
 #define YY_USER_ACTION \

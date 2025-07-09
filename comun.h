@@ -62,11 +62,8 @@ inline CodeAttr constReal(double v){
     return r;
 }
 
-inline CodeAttr loadVal(int dir,unsigned tipo){
-    CodeAttr r; r.tipo=tipo; r.dir=nuevaTemp();
-    r.cod="mov "+std::to_string(dir)+" A\nmov A "+std::to_string(r.dir)+"\n";
-    return r;
-}
+
+inline std::string label(unsigned n){ return "L" + std::to_string(n); }
 
 inline CodeAttr loadFromAddr(const CodeAttr &addr,unsigned tipo){
     CodeAttr r; r.tipo=tipo; r.dir=nuevaTemp();
