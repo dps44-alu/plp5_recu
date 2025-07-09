@@ -1,0 +1,9 @@
+mov #0 A
+rdr @A
+mov #0 A
+mov @A A
+mov A 16000
+mov 16000 A
+wrr A
+wrl
+halt
