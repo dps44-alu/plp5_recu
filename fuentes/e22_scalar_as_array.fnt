@@ -1,0 +1,5 @@
+fn main()
+
+  var a;
+  print a[0];
+endfn

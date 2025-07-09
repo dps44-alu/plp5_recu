@@ -1,0 +1,8 @@
+fn main()
+
+  var i: real;
+  loop i range 5
+    print i
+  endloop;
+
+endfn
